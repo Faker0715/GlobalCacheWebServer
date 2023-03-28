@@ -1,0 +1,9 @@
+[submodule "3rdparty/xxl-job-auto-register"]
+	path = 3rdparty/xxl-job-auto-register
+	url = https://github.com/trunks2008/xxl-job-auto-register
+[submodule "3rdparty/xxl-job"]
+	path = 3rdparty/xxl-job
+	url = https://github.com/xuxueli/xxl-job
+[submodule "3rdparty/GlobalCacheSDK"]
+	path = 3rdparty/GlobalCacheSDK
+	url = git@github.com:BeingGod/GlobalCacheSDK.git
