@@ -25,9 +25,13 @@ public class HealthInfoService {
     @Autowired
     private HealthListSave healthListSave;
 
-    public ResponseResult getHealthInfo() {
-        healthListSave.HealthListSchedule();
+    public synchronized   ResponseResult getHealthInfo() {
         List<HealthList> healthLists  = healthListData.getAbnInfo();
+        if(healthLists.size() == 0){
+            healthListSave.HealthListSchedule();
+            healthListData.getAbnInfo();
+        }
+
         Map map = new HashMap<>();
         if (healthLists.size() != 0) {
             map.put("healthInfo", healthLists.get(healthLists.size() - 1).getHealthArrayList());
@@ -39,9 +43,12 @@ public class HealthInfoService {
         return new ResponseResult<Map<String, Object>>(map);
     }
 
-    public ResponseResult getHealthInfoNum() {
-        healthListSave.HealthListSchedule();
+    public synchronized  ResponseResult getHealthInfoNum() {
         List<HealthList> healthLists  = healthListData.getAbnInfo();
+        if(healthLists.size() == 0){
+            healthListSave.HealthListSchedule();
+            healthListData.getAbnInfo();
+        }
         Map map = new HashMap<>();
         if (healthLists.size() != 0)
             map.put("healthInfoNum", healthLists.get(healthLists.size() - 1).getHealthArrayList().size());
