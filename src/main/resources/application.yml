@@ -1,0 +1,77 @@
+websocket:
+  # websocket的端口
+  port: 9998
+  # websocket前端的响应地址 ws://localhost:8399/wsVue
+  action:
+  thread:
+    # boss线程数
+    boss: 128
+    # work线程数
+    work: 128
+
+Server:
+  port: 9999
+
+spring:
+  data:
+    mongodb:
+      database:articledb
+      host:127.0.0.1
+      port:27017
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/hwlogin?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8
+    username: mysql_user
+    password: mysql_passwd
+    tomcat:
+      max-active: 128
+      max-idle: 64
+      min-idle: 5
+      max-wait: 10000
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: redis_passwd
+    lettuce:
+      pool:
+        max-active: 256
+        max-idle: 256
+        min-idle: 1
+        time-between-eviction-runs: 10s
+  security:
+    filter:
+      order: 0
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+xxl.job.admin.addresses: http://127.0.0.1:9091/xxl-job-admin
+xxl.job.accessToken: default_token
+xxl.job.executor.appname: xxl-job-executor-hw
+xxl.job.executor.address:
+xxl.job.executor.ip: 127.0.0.1
+xxl.job.executor.port: 8083
+# xxl-job的绝对路径
+xxl.job.executor.logpath: path_to_xxl-job
+xxl.job.executor.logretentiondays: 30
+
+# 新增配置项，必须项
+# admin用户名
+xxl.job.admin.username: admin
+# admin 密码
+xxl.job.admin.password: admin_passwd
+# 执行器名称
+xxl.job.executor.title: HWBackend
+
+# 新增配置项，可选项
+# 执行器地址类型：0=自动注册、1=手动录入，默认为0
+xxl.job.executor.addressType: 1
+# 在上面为1的情况下，手动录入执行器地址列表，多地址逗号分隔
+xxl.job.executor.addressList: http://127.0.0.1:8083
