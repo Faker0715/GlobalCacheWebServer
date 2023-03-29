@@ -1,3 +1,0 @@
-xxl-job: 2.3.0
-xxl-job-auto-register: master
-GlobalCacheSDK: v1.0.0
