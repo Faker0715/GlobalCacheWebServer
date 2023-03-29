@@ -82,10 +82,25 @@ public class UpdateService {
             nodelist.add(ptNode);
         }
 
-        Map map = new HashMap<>();
-        map.put("nodeList",nodelist);
-        map.put("ptList",ptLists.get(0).getPtArrayList());
-        return new ResponseResult<Map<String, Object>>(map);
+        String nodelistkey = CACHE_Pt_KEY+ "nodelist";
+        String ptlistkey = CACHE_Pt_KEY + "ptlist";
+        if (ptLists.size() != 0 && nodelist.size() != 0){
+            stringRedisTemplate.opsForValue().set(ptlistkey, JSONUtil.toJsonStr(ptLists), CACHE_Pt_TIMEOUT, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(nodelistkey, JSONUtil.toJsonStr(nodelist), CACHE_Pt_TIMEOUT, TimeUnit.SECONDS);
+            Map map = new HashMap<>();
+            map.put("nodeList",nodelist);
+            map.put("ptList",ptLists.get(0).getPtArrayList());
+            return new ResponseResult<Map<String, Object>>(map);
+        }else{
+            Map map = new HashMap<>();
+            map.put("nodeList","");
+            map.put("ptList","");
+            return new ResponseResult<Map<String, Object>>(map);
+        }
+//        Map map = new HashMap<>();
+//        map.put("nodeList",nodelist);
+//        map.put("ptList",ptLists.get(0).getPtArrayList());
+//        return new ResponseResult<Map<String, Object>>(map);
     }
 
     public ResponseResult getPtAll(String token){
@@ -202,10 +217,25 @@ public class UpdateService {
             nodelist.add(pgNode);
         }
 
-        Map map = new HashMap<>();
-        map.put("nodeList",nodelist);
-        map.put("pgList",pgLists.get(0).getPgArrayList());
-        return new ResponseResult<Map<String, Object>>(map);
+        String nodelistkey = CACHE_Pg_KEY+ "nodelist";
+        String pglistkey = CACHE_Pg_KEY + "pglist";
+        if (pgLists.size() != 0 && nodelist.size() != 0){
+            stringRedisTemplate.opsForValue().set(pglistkey, JSONUtil.toJsonStr(pgLists), CACHE_Pg_TIMEOUT, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(nodelistkey, JSONUtil.toJsonStr(nodelist), CACHE_Pg_TIMEOUT, TimeUnit.SECONDS);
+            Map map = new HashMap<>();
+            map.put("nodeList",nodelist);
+            map.put("pgList",pgLists.get(0).getPgArrayList());
+            return new ResponseResult<Map<String, Object>>(map);
+        }else{
+            Map map = new HashMap<>();
+            map.put("nodeList","");
+            map.put("pgList","");
+            return new ResponseResult<Map<String, Object>>(map);
+        }
+//        Map map = new HashMap<>();
+//        map.put("nodeList",nodelist);
+//        map.put("pgList",pgLists.get(0).getPgArrayList());
+//        return new ResponseResult<Map<String, Object>>(map);
     }
 
     public ResponseResult getPgAll(String token){
