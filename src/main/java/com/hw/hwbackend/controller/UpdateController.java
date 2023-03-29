@@ -20,13 +20,25 @@ public class UpdateController {
 
     //获取Pt信息
     @PostMapping("/getPtAll")
+    public ResponseResult getPtAll(@RequestBody Map data){
+        String token = (String) data.get("token");
+        return updateServcie.getPtAll(token);
+
+    }
+    //获取Pg信息
+    @PostMapping("/getPgAll")
+    public ResponseResult getPgAll(@RequestBody Map data){
+        String token = (String) data.get("token");
+        return updateServcie.getPgAll(token);
+    }
+    @PostMapping("/getPtUpdate")
     public ResponseResult getPtUpdate(@RequestBody Map data){
         String token = (String) data.get("token");
         return updateServcie.getPtUpdate(token);
 
     }
     //获取Pg信息
-    @PostMapping("/getPgAll")
+    @PostMapping("/getPgUpdate")
     public ResponseResult getPgUpdate(@RequestBody Map data){
         String token = (String) data.get("token");
         return updateServcie.getPgUpdate(token);
