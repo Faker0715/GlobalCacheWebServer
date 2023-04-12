@@ -16,7 +16,7 @@ public class WebsocketGlobalExceptionImpl implements WebsocketGlobalException {
     @Override
     public Object errorHandler(Exception e) {
         Map<String,Object> r = new HashMap<>();
-        System.out.println(e);
+//        System.out.println(e);
         r.put("code",404);
         r.put("msg","失败了");
         return r;
