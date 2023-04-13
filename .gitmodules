@@ -6,4 +6,4 @@
 	url = https://github.com/xuxueli/xxl-job
 [submodule "3rdparty/GlobalCacheSDK"]
 	path = 3rdparty/GlobalCacheSDK
-	url = git@github.com:BeingGod/GlobalCacheSDK.git
+	url = https://github.com/BeingGod/GlobalCacheSDK
