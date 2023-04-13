@@ -96,7 +96,7 @@ public class AutoDeployService {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
                     System.out.println("接口调用失败");
-                    System.out.println(entry.getValue().getStatusCode());
+//                    System.out.println(entry.getValue().getStatusCode());
                 }
             }
         } catch (GlobalCacheSDKException e) {
@@ -182,7 +182,7 @@ public class AutoDeployService {
         List<AutoList.AutoEntity> ipList = userHolder.getAutoMap().get(token).getAutoEntityArrayList();
         Map map = new HashMap<>();
         map.put("ipList", ipList);
-        System.out.println(ipList);
+//        System.out.println(ipList);
         return new ResponseResult<Map<String, Object>>(map);
     }
 
@@ -199,7 +199,7 @@ public class AutoDeployService {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
                     System.out.println("接口调用失败");
-                    System.out.println(entry.getValue().getStatusCode());
+//                    System.out.println(entry.getValue().getStatusCode());
                 }
             }
         } catch (GlobalCacheSDKException e) {
@@ -212,7 +212,7 @@ public class AutoDeployService {
         boolean isCpu = true;
         boolean isMemory = true;
         for (Map.Entry<String, ErrorCodeEntity> entry : entityMap.entrySet()) {
-            System.out.println(entry.getKey() + entry.getValue().getErrorCode() + entry.getValue().getMessage());
+//            System.out.println(entry.getKey() + entry.getValue().getErrorCode() + entry.getValue().getMessage());
             if (entry.getValue().getErrorCode() != 0) {
                 isConnected = false;
             }
@@ -286,7 +286,7 @@ public class AutoDeployService {
                             }
                         }
                     } else {
-                        System.out.println(entry.getValue().getStatusCode());
+//                        System.out.println(entry.getValue().getStatusCode());
                     }
                 }
             } catch (GlobalCacheSDKException e) {
@@ -337,7 +337,7 @@ public class AutoDeployService {
         //保存
         userHolder.getAutoMap().get(token).setAutoEntityArrayList(ipList);
         HashMap<String, Object> returnmap = new HashMap<>();
-        System.out.println(userHolder.getAutoMap().get(token).getAutoEntityArrayList());
+//        System.out.println(userHolder.getAutoMap().get(token).getAutoEntityArrayList());
         map.put("isSuccessed", true);
         return new ResponseResult<Map<String, Object>>(returnmap);
     }
@@ -356,8 +356,8 @@ public class AutoDeployService {
         for (AutoList.AutoEntity entity : autolist) {
             for (int i = 0; i < allEntity.size(); i++) {
                 if (allEntity.get(i).getName().equals(entity.getName())) {
-                    System.out.println(allEntity.get(i));
-                    System.out.println(allEntity.get(i).getDataList());
+//                    System.out.println(allEntity.get(i));
+//                    System.out.println(allEntity.get(i).getDataList());
                     entity.setDataList(allEntity.get(i).getDataList());
                     entity.setCacheList(allEntity.get(i).getCacheList());
                 }
@@ -644,7 +644,7 @@ public class AutoDeployService {
                                 }
                                 // 将数据发送给前端s
                                 UserHolder.getInstance().getAutopipe().add(line);
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -689,7 +689,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(line);
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -734,7 +734,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -808,7 +808,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(line);
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -852,7 +852,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(line);
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -898,7 +898,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -945,7 +945,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -992,7 +992,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(line);
-                                System.out.println(entry.getKey() + ": " + line);
+//                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }

@@ -40,7 +40,7 @@ public class ScheduleConfig {
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         // 设置最大线程数
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2 + 1);
-        System.out.println(Runtime.getRuntime().availableProcessors());
+//        System.out.println(Runtime.getRuntime().availableProcessors());
         // 设置队列容量
         executor.setQueueCapacity(Runtime.getRuntime().availableProcessors() * 10);
         // 设置线程活跃时间（秒）

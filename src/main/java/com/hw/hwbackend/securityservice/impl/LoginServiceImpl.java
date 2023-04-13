@@ -65,7 +65,7 @@ public class LoginServiceImpl implements LoginServcie {
         loginUser.setTime(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
         stringRedisTemplate.opsForValue().set("jwt:" + username, JSONUtil.toJsonStr(loginUser), 30 * 60, TimeUnit.SECONDS);
         int isSpuer = loginUser.getUser().getUserType();
-        System.out.println("issuper: " + isSpuer);
+//        System.out.println("issuper: " + isSpuer);
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.addAuto(token, new AutoList());
         return new ResponseResult(true, map, isSpuer,"登陆成功");

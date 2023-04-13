@@ -73,7 +73,7 @@ public class MemoryService {
         }
         //将数据封装成前端所需的格式
         Memory memory = memories.get(0);
-        System.out.println(memories.size());
+//        System.out.println(memories.size());
         String[]  memoryNowTime = new String[memories.size()];
         Double[] memoryRatioList = new Double[memories.size()];
 

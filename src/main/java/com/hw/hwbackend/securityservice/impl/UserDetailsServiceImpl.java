@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         queryWrapper.eq(User::getUserName,username);
         User user = userMapper.selectOne(queryWrapper);
 
-        System.out.println(user);
+//        System.out.println(user);
         //如果没有查询到用户就抛出异常
         if(Objects.isNull(user)){
             throw new RuntimeException("用户名或者密码错误");

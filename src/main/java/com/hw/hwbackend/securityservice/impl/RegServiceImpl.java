@@ -34,7 +34,7 @@ public class RegServiceImpl implements RegService {
             map.put("reason","用户已经存在");
             return new ResponseResult<Map<String,Object>>(map);
         }
-        System.out.println(userName + "***" + userPassword);
+//        System.out.println(userName + "***" + userPassword);
         String encode = passwordEncoder.encode(userPassword);
         regMapper.addUser(userName,encode,userStatus,userEmail,userPhoneNumber,userType,0);
         map.put("isSuccessed",true);

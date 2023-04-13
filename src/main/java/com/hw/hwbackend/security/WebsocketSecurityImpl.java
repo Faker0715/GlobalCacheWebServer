@@ -26,7 +26,7 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
     public Boolean authentication(ChannelHandlerContext ctx, SocketRequest socketRequest) {
         // 先判断url是否是websocket的url
         Boolean isPass = authService.authUrl(socketRequest.getUrl());
-        System.out.println(socketRequest.getUrl());
+//        System.out.println(socketRequest.getUrl());
         // 如果不通过
         if(!isPass){
             // 先给前端发一条消息
