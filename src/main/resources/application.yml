@@ -75,3 +75,6 @@ xxl.job.executor.title: HWBackend
 xxl.job.executor.addressType: 1
 # 在上面为1的情况下，手动录入执行器地址列表，多地址逗号分隔
 xxl.job.executor.addressList: http://127.0.0.1:8083
+
+# GlobalCacheSDK注册的scripts路径
+GlobalCacheScripts.path: <path to GlobalCacheScripts>
