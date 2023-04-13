@@ -53,7 +53,7 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
 
 xxl.job.admin.addresses: http://127.0.0.1:9091/xxl-job-admin
-xxl.job.accessToken: default_token
+xxl.job.accessToken:
 xxl.job.executor.appname: xxl-job-executor-hw
 xxl.job.executor.address:
 xxl.job.executor.ip: 127.0.0.1
