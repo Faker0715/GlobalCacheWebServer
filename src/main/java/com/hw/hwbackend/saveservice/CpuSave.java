@@ -34,6 +34,8 @@ public class CpuSave {
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
         CpuInfo cpuInfo = new CpuInfo();
+        Map<String,Integer> worktimemap = new HashMap<>();
+        
         int worktime = 0;
         //获取运行时间
         try {
@@ -41,6 +43,7 @@ public class CpuSave {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     UptimeInfo up = (UptimeInfo) (entry.getValue().getData());
                     worktime = (int) up.getUptime();
+                    worktimemap.put(entry.getKey(),worktime); 
                 }
             }
         } catch (
@@ -57,7 +60,8 @@ public class CpuSave {
                     Cpu cpu = new Cpu();
                     cpu.setCpuUse(cpuInfo.getTotalUsage());
                     cpu.setNodeId(ipmap.get(entry.getKey()));
-                    cpu.setWorkingTime(new WorkTime(worktime/60 - (worktime/(24*60))*24,worktime % 60 ,worktime/(24*60)));
+                    int wtime = worktimemap.get(entry.getKey());
+                    cpu.setWorkingTime(new WorkTime(wtime/60 - (wtime/(24*60))*24,wtime% 60 ,wtime/(24*60)));
                     String id = ipmap.get(entry.getKey()) + "1" + time;
                     cpu.setId(Long.parseLong(id));
                     cpu.setTime(time);
