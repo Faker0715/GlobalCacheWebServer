@@ -51,7 +51,7 @@ public class MemorySave {
                     m.setMemoryUsing(((double)memInfo.getUsed() * 1.0) / (1024 * 1024));
                     m.setMemoryCache(((double)memInfo.getCache() * 1.0) / (1024 * 1024));
                     m.setMemoryUseable(((double)memInfo.getFree()*1.0)/ (1024 * 1024));
-                    m.setMemoryRatio((double)((double)memInfo.getUsed()*1.0) /( (double)memInfo.getTotal() * 1.0));
+                    m.setMemoryRatio((double)((double)memInfo.getUsed()*1.0)*100 /( (double)memInfo.getTotal() * 1.0));
                     m.setNodeId(ipmap.get(entry.getKey()));
                     String id = ipmap.get(entry.getKey()) + "1" + time;
                     m.setId(Long.parseLong(id));
