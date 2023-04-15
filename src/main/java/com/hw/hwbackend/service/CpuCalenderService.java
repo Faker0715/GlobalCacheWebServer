@@ -51,6 +51,7 @@ public class CpuCalenderService{
             WebsocketDTO wsdto = WebSocketHandlerListenterImpl.WebsocketMap.get(entry.getKey());
             if(wsdto.getUrl().equals("/getCpuCalender")) {
                 jsonObject.put("token",wsdto.getParams().getToken());
+                log.info("cpucalenderservice-websocket: " + jsonObject.toJSONString());
                 //发送给前端
                 entry.getValue().writeAndFlush(new TextWebSocketFrame(jsonObject.toJSONString()));
             }

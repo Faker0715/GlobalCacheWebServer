@@ -9,6 +9,8 @@ import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.hwbackend.dataservice.NetworkData;
 import com.hw.hwbackend.entity.Network;
 import com.hw.hwbackend.util.UserHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class NetworkSave {
     @Autowired
     private NetworkData networkData;
 
+    private static Logger log = LoggerFactory.getLogger(NetworkSave.class);
     public void NetworkSchedule() {
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
@@ -35,7 +38,9 @@ public class NetworkSave {
         for (int i = 0; i < hosts.size(); i++) {
             try {
                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(hosts.get(i)).entrySet()) {
+                    log.info("networksave-querystaticnetinfo: "+ entry.getValue().getStatusCode());
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                        log.info("networksave-querystaticnetinfo-data: "+ (StaticNetInfo)(entry.getValue().getData()));
                         staticNetInfo = (StaticNetInfo) entry.getValue().getData();
                     }
                 }
@@ -46,7 +51,9 @@ public class NetworkSave {
             //获取DynamicNet数据
             try {
                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryDynamicNetInfo(hosts).entrySet()) {
+                    log.info("networksave: querydynamicNetInfo : "+ entry.getValue().getStatusCode());
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                        log.info("networksave-querydynamicnetinfo-data: "+ (DynamicNetInfo)(entry.getValue().getData()));
                         dynamicNetInfo = (DynamicNetInfo) entry.getValue().getData();
                     }
                 }

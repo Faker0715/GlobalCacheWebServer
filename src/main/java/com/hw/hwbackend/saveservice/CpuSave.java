@@ -9,6 +9,8 @@ import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.hwbackend.dataservice.CpuData;
 import com.hw.hwbackend.entity.*;
 import com.hw.hwbackend.util.UserHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -25,7 +27,7 @@ import java.util.*;
 public class CpuSave {
     @Autowired
     private CpuData cpuData;
-
+    private static Logger log = LoggerFactory.getLogger(CpuSave.class);
     public void CpuSchedule() {
         //获取连接当前节点信息
         UserHolder userHolder = UserHolder.getInstance();
@@ -35,7 +37,8 @@ public class CpuSave {
 
         CpuInfo cpuInfo = new CpuInfo();
         Map<String,Integer> worktimemap = new HashMap<>();
-        
+
+        log.info("cpusave-hosts: " + hosts.toString());
         int worktime = 0;
         //获取运行时间
         try {
@@ -54,6 +57,7 @@ public class CpuSave {
         //获取Cpu相关数据
         try {
             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryCpuInfo(hosts).entrySet()) {
+
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     cpuInfo = (CpuInfo) entry.getValue().getData();
                     //封装
@@ -65,6 +69,7 @@ public class CpuSave {
                     String id = ipmap.get(entry.getKey()) + "1" + time;
                     cpu.setId(Long.parseLong(id));
                     cpu.setTime(time);
+                    log.info("cpusave-cpu: " + cpu.toString());
                     //保存到数据库
                     cpuData.saveCPU(cpu);
                 }

@@ -12,6 +12,8 @@ import com.hw.hwbackend.entity.Iprelation;
 import com.hw.hwbackend.mapper.MenuMapper;
 import com.hw.hwbackend.mapper.RegMapper;
 import com.hw.hwbackend.util.UserHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ public class SessionService {
     private final RegMapper regMapper;
     private final MenuMapper menuMapper;
 
+    private static Logger log = LoggerFactory.getLogger(SessionService.class);
     @Autowired
     public SessionService(RegMapper regMapper, MenuMapper menuMapper) {
         this.regMapper = regMapper;
@@ -44,10 +47,15 @@ public class SessionService {
             String ceph1 = this.regMapper.getIp();
             UserHolder.getInstance().setCeph1(ceph1);
             UserHolder.getInstance().setIsdeployfinished(true);
+            log.info("sessionsevice: setceph1ip: " + ceph1);
+
+
             ArrayList<String> hosts = new ArrayList<>();
             for (Ceph ceph : cephs) {
                 hosts.add(ceph.getIp());
+                log.info("sessionsevice: add ip to cephs " + ceph.getIp());
             }
+
             for (int i = 0; i < hosts.size(); i++) {
 
                 for (int j = 0; j < globalCacheUsers.size(); j++) {
@@ -124,10 +132,14 @@ public class SessionService {
             }
 
             ip.setId(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
+
             ip.setNodes(nodes);
             ip.setIdMap(idmap);
             ip.setDisks(disks);
             ip.setIps(ips);
+            log.info("sessionservice-iprelation nodes: " + nodes.toString());
+            log.info("sessionservice-iprelation idmap: " + idmap.toString());
+            log.info("sessionservice-iprelation ips: " + ips.toString());
             UserHolder.getInstance().setIprelation(ip);
         }
 

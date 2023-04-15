@@ -7,9 +7,12 @@ import com.hw.globalcachesdk.entity.DiskIoInfo;
 import com.hw.globalcachesdk.exception.GlobalCacheSDKException;
 import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.hwbackend.dataservice.DiskData;
+import com.hw.hwbackend.entity.AutoList;
 import com.hw.hwbackend.entity.Disk;
 import com.hw.hwbackend.entity.Time;
 import com.hw.hwbackend.util.UserHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,7 @@ public class DiskSave {
         @Autowired
         private DiskData diskData;
 
+        private static Logger log = LoggerFactory.getLogger(DiskSave.class);
         public void DiskSchedule() {
             //获取连接当前节点信息
             UserHolder userHolder = UserHolder.getInstance();
@@ -41,7 +45,9 @@ public class DiskSave {
             for (int i = 0; i < hosts.size(); i++) {
                 try {
                     for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryCacheDiskInfo(hosts.get(i)).entrySet()) {
+                        log.info("disksave-querycachediskinfo: "+ entry.getValue().getStatusCode());
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            log.info("disksave-querycachediskinfo-data: "+ (CacheDiskInfo)(entry.getValue().getData()));
                             cacheDiskInfo = (CacheDiskInfo) (entry.getValue().getData());
                         }
                     }
@@ -56,8 +62,9 @@ public class DiskSave {
                 //获取DiskIo信息
                 try {
                     for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryDiskIoInfo(hosts1).entrySet()) {
+                        log.info("disksave-querydiskioinfo: "+ entry.getValue().getStatusCode());
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-
+                            log.info("disksave-querydiskioinfo-data: "+ (DiskIoInfo)(entry.getValue().getData()));
                             diskIoInfo = (DiskIoInfo) (entry.getValue().getData());
                         }
                     }
