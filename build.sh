@@ -9,7 +9,7 @@ xxl_job_auto_register_path=$SCRIPT_HOME/3rdparty/xxl-job-auto-register
 function build_dependencies()
 {
     cd $GlobalCacheSDK_path
-    mvn clean install
+    mvn clean install -DskipTests
 
     cd $xxl_job_auto_register_path
     mvn clean install
