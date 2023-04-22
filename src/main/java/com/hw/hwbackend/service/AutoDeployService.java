@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hw.globalcachesdk.ExecuteNode.CEPH1_ONLY;
+import static com.hw.globalcachesdk.ExecuteNode.ALL_CLIENT_NODES;
+
 //自动化部署的业务类
 @Service
 public class AutoDeployService {
@@ -545,8 +548,10 @@ public class AutoDeployService {
                 List<AutoList.AutoEntity> autoEntities = autolist.getAutoEntityArrayList();
                 int num = 0;
                 String cephname = "ceph";
+                ArrayList<String> ceph1ip = new ArrayList<>();
                 for (AutoList.AutoEntity entity : autoEntities) {
                     if (entity.getRoleName().equals("ceph1")) {
+                        ceph1ip.add(entity.getName());
                         CephConf cephConf = new CephConf(cephname + num, ++num, true, true, true, entity.getLocalIPv4(),
                                 entity.getName(), entity.getClusterIPv4(), autolist.getNetMask(), autolist.getPassword(),
                                 dataDiskList.get(entity.getName()),
@@ -563,11 +568,13 @@ public class AutoDeployService {
 
                 num = 0;
                 String clientname = "client";
+                ArrayList<String> clienthosts = new ArrayList<>();
                 for (AutoList.AutoEntity entity : autoEntities) {
                     if (entity.getRoleName().contains("client")) {
                         ClientConf clientConf = new ClientConf(clientname + num, autolist.getNetMask(),
                                 entity.getName(), autolist.getPassword());
                         clientConfs.add(clientConf);
+                        clienthosts.add(entity.getName());
                     }
                 }
 
@@ -743,26 +750,145 @@ public class AutoDeployService {
                     }
                 }
 
+                // deploy client compile env
                 try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.isPkgsBuildSuccess(hosts).entrySet()) {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeConfEnv().entrySet()) {
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                             ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
                             if (errorCodeEntity.getErrorCode() != 0) {
-                                UserHolder.getInstance().getAutopipe().add("编译软件包失败");
+                                UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env failed");
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 UserHolder.getInstance().setSuccess(false);
                                 return;
                             }
                         } else {
-                            UserHolder.getInstance().getAutopipe().add("编译软件包失败");
+                            UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env failed");
                             UserHolder.getInstance().setIsdeployfinished(true);
                             UserHolder.getInstance().setSuccess(false);
                             return;
                         }
                     }
                 } catch (GlobalCacheSDKException e) {
-                    System.out.println("编译软件包失败");
-                    UserHolder.getInstance().getAutopipe().add("编译软件包失败");
+                    System.out.println("deploy ceph1 compile env failed");
+                    UserHolder.getInstance().getAutopipe().add("deploy cpeh1 compile env failed");
+                    UserHolder.getInstance().setIsdeployfinished(true);
+                    UserHolder.getInstance().setSuccess(false);
+                    e.printStackTrace();
+                    return;
+
+                }
+
+                UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env success");
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeConfEnv().entrySet()) {
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                            if (errorCodeEntity.getErrorCode() != 0) {
+                                UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
+                                UserHolder.getInstance().setIsdeployfinished(true);
+                                UserHolder.getInstance().setSuccess(false);
+                                return;
+                            }
+                        } else {
+                            UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
+                            UserHolder.getInstance().setIsdeployfinished(true);
+                            UserHolder.getInstance().setSuccess(false);
+                            return;
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("deploy client compile env failed");
+                    UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
+                    UserHolder.getInstance().setIsdeployfinished(true);
+                    UserHolder.getInstance().setSuccess(false);
+                    e.printStackTrace();
+                    return;
+
+                }
+
+                UserHolder.getInstance().getAutopipe().add("deploy client compile env success");
+                // client compile pkg
+
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeBuildPkgs().entrySet()) {
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                            if (errorCodeEntity.getErrorCode() != 0) {
+                                UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
+                                UserHolder.getInstance().setIsdeployfinished(true);
+                                UserHolder.getInstance().setSuccess(false);
+                                return;
+                            }
+                        } else {
+                            UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
+                            UserHolder.getInstance().setIsdeployfinished(true);
+                            UserHolder.getInstance().setSuccess(false);
+                            return;
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("client compile pkg failed");
+                    UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
+                    UserHolder.getInstance().setIsdeployfinished(true);
+                    UserHolder.getInstance().setSuccess(false);
+                    e.printStackTrace();
+                    return;
+
+                }
+
+                UserHolder.getInstance().getAutopipe().add("client compile pkg success");
+
+
+
+
+
+
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.isPkgsBuildSuccess(ceph1ip,CEPH1_ONLY).entrySet()) {
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                            if (errorCodeEntity.getErrorCode() != 0) {
+                                UserHolder.getInstance().getAutopipe().add("ceph1编译软件包失败");
+                                UserHolder.getInstance().setIsdeployfinished(true);
+                                UserHolder.getInstance().setSuccess(false);
+                                return;
+                            }
+                        } else {
+                            UserHolder.getInstance().getAutopipe().add("ceph1编译软件包失败");
+                            UserHolder.getInstance().setIsdeployfinished(true);
+                            UserHolder.getInstance().setSuccess(false);
+                            return;
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("ceph1编译软件包失败");
+                    UserHolder.getInstance().getAutopipe().add("ceph1编译软件包失败");
+                    UserHolder.getInstance().setIsdeployfinished(true);
+                    UserHolder.getInstance().setSuccess(false);
+                    e.printStackTrace();
+                    return;
+
+                }
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.isPkgsBuildSuccess(clienthosts,ALL_CLIENT_NODES).entrySet()) {
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                            if (errorCodeEntity.getErrorCode() != 0) {
+                                UserHolder.getInstance().getAutopipe().add("client编译软件包失败");
+                                UserHolder.getInstance().setIsdeployfinished(true);
+                                UserHolder.getInstance().setSuccess(false);
+                                return;
+                            }
+                        } else {
+                            UserHolder.getInstance().getAutopipe().add("client编译软件包失败");
+                            UserHolder.getInstance().setIsdeployfinished(true);
+                            UserHolder.getInstance().setSuccess(false);
+                            return;
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("client编译软件包失败");
+                    UserHolder.getInstance().getAutopipe().add("client编译软件包失败");
                     UserHolder.getInstance().setIsdeployfinished(true);
                     UserHolder.getInstance().setSuccess(false);
                     e.printStackTrace();
