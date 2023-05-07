@@ -46,11 +46,11 @@ public class AutoDeployService {
     public ResponseResult getCheckRootPassword(String password, String token) {
         Map<String, Object> returnmap = new HashMap<>();
         UserHolder userHolder = UserHolder.getInstance();
-        if(BeanUtil.isEmpty(userHolder.getAutoMap().get(token))){
+        if (BeanUtil.isEmpty(userHolder.getAutoMap().get(token))) {
             userHolder.addAuto(token, new AutoList());
         }
         userHolder.getAutoMap().get(token).setPassword(password);
-        if(BeanUtil.isEmpty(userHolder.getAutoMap().get(token).getAutoEntityArrayList())){
+        if (BeanUtil.isEmpty(userHolder.getAutoMap().get(token).getAutoEntityArrayList())) {
             userHolder.getAutoMap().get(token).setAutoEntityArrayList(new ArrayList<>());
         }
         returnmap.put("isRight", true);
@@ -551,18 +551,17 @@ public class AutoDeployService {
                     if (cachearray.size() > 0)
                         cacheDiskList.put(entity.getName(), cachearray);
                 }
-                String[]ip = autolist.getNetMask().split("\\.");
+                String[] ip = autolist.getNetMask().split("\\.");
                 long ipnum = (Long.parseLong(ip[0]) << 24) + (Long.parseLong(ip[1]) << 16) + (Long.parseLong(ip[2]) << 8) + (Long.parseLong(ip[3]));
                 int onesCount = 0;
                 for (int i = 0; i < 32; i++) {
-                        if((ipnum & (1 << i))!= 0 )
-                        {
-                            onesCount++;
-                        }
+                    if ((ipnum & (1 << i)) != 0) {
+                        onesCount++;
                     }
+                }
                 System.out.println("Count: " + onesCount);
-                autolist.setCnet(autolist.getCnet() + ":" + onesCount);
-                autolist.setPnet(autolist.getPnet()+ ":" + onesCount);
+                autolist.setCnet(autolist.getCnet() + "/" + onesCount);
+                autolist.setPnet(autolist.getPnet() + "/" + onesCount);
                 System.out.println(autolist.getPnet());
                 System.out.println(autolist.getCnet());
 
@@ -583,7 +582,7 @@ public class AutoDeployService {
                         cephConfs.add(cephConf);
                         cephips.add(entity.getName());
                     } else if (entity.getRoleName().contains("ceph")) {
-                        CephConf cephConf = new CephConf(cephname + name_num, num++,false ,false ,false, entity.getLocalIPv4(),
+                        CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
                                 entity.getName(), entity.getClusterIPv4(), autolist.getNetMask(), autolist.getPassword(),
                                 dataDiskList.get(entity.getName()),
                                 cacheDiskList.get(entity.getName()));
@@ -633,7 +632,7 @@ public class AutoDeployService {
                 for (AutoList.AutoEntity entity : autoEntities) {
                     hosts.add(entity.getName());
                 }
-                
+
                 log.info("compileNodeConfEnv start.");
                 // 配置编译节点
                 {
@@ -677,7 +676,7 @@ public class AutoDeployService {
                                 }
                                 // 将数据发送给前端s
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -698,7 +697,7 @@ public class AutoDeployService {
                                 UserHolder.getInstance().getAutopipe().add("编译软件失败");
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 UserHolder.getInstance().setSuccess(false);
-                                return ;
+                                return;
                             }
                         }
                     } catch (GlobalCacheSDKException e) {
@@ -708,7 +707,7 @@ public class AutoDeployService {
                         UserHolder.getInstance().setSuccess(false);
                         UserHolder.getInstance().getAutopipe().add("编译软件失败");
                         UserHolder.getInstance().setIsdeployfinished(true);
-                        return ;
+                        return;
                     }
 
                     log.info("compileNodeBuildPkgs success.");
@@ -726,7 +725,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -747,7 +746,7 @@ public class AutoDeployService {
                                 UserHolder.getInstance().getAutopipe().add("分发软件包失败");
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 UserHolder.getInstance().setSuccess(false);
-                                return ;
+                                return;
                             }
                         }
                     } catch (GlobalCacheSDKException e) {
@@ -757,11 +756,58 @@ public class AutoDeployService {
                         UserHolder.getInstance().setSuccess(false);
                         UserHolder.getInstance().getAutopipe().add("分发软件包失败");
                         UserHolder.getInstance().setIsdeployfinished(true);
-                        return ;
+                        return;
                     }
 
                     log.info("compileNodeDistributePkgs success.");
                     System.out.println("分发软件包成功");
+
+                    int countDown = entityMap.size();
+                    while (countDown > 0) {
+                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
+                            AsyncEntity entity = entry.getValue();
+                            try {
+                                String line = entity.readLine();
+                                if (line == null) {
+
+                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
+                                    countDown -= 1;
+                                    continue;
+                                }
+                                System.out.println(entry.getKey() + ": " + line);
+                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
+                            } catch (AsyncThreadException e) {
+                                System.err.println("异步线程异常");
+                            }
+                        }
+                    }
+                }
+
+                log.info("clientNodeConfCompileEnv start.");
+                // 编译环境配置
+                {
+                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
+                    try {
+                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeConfCompileEnv().entrySet()) {
+                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
+                            } else {
+                                log.info("clientNodeConfCompileEnv failed.");
+                                UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv失败");
+                                UserHolder.getInstance().setIsdeployfinished(true);
+                                UserHolder.getInstance().setSuccess(false);
+                                return;
+                            }
+                        }
+                    } catch (GlobalCacheSDKException e) {
+                        log.info("clientNodeConfCompileEnv failed.");
+                        System.out.println("clientNodeConfCompileEnv失败");
+                        e.printStackTrace();
+                        UserHolder.getInstance().setSuccess(false);
+                        UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv失败");
+                        UserHolder.getInstance().setIsdeployfinished(true);
+                        return;
+                    }
 
                     int countDown = entityMap.size();
                     while (countDown > 0) {
@@ -782,115 +828,61 @@ public class AutoDeployService {
                             }
                         }
                     }
+
+                    log.info("clientNodeConfCompileEnv success.");
+                    UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv success");
                 }
-
-                log.info("compileNodeConfEnv start.");
-                // deploy client compile env
-                try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeConfEnv().entrySet()) {
-                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
-                            if (errorCodeEntity.getErrorCode() != 0) {
-                                log.info("compileNodeConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env failed");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        } else {
-                            log.info("compileNodeConfEnv failed.");
-                            UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env failed");
-                            UserHolder.getInstance().setIsdeployfinished(true);
-                            UserHolder.getInstance().setSuccess(false);
-                            return;
-                        }
-                    }
-                } catch (GlobalCacheSDKException e) {
-                    log.info("compileNodeConfEnv failed.");
-                    System.out.println("deploy ceph1 compile env failed");
-                    UserHolder.getInstance().getAutopipe().add("deploy cpeh1 compile env failed");
-                    UserHolder.getInstance().setIsdeployfinished(true);
-                    UserHolder.getInstance().setSuccess(false);
-                    e.printStackTrace();
-                    return;
-
-                }
-
-                log.info("compileNodeConfEnv success.");
-                UserHolder.getInstance().getAutopipe().add("deploy ceph1 compile env success");
-                log.info("clientNodeConfEnv start.");
-                try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeConfEnv().entrySet()) {
-                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
-                            if (errorCodeEntity.getErrorCode() != 0) {
-                                log.info("clientNodeConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        } else {
-                            log.info("clientNodeConfEnv failed.");
-                            UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
-                            UserHolder.getInstance().setIsdeployfinished(true);
-                            UserHolder.getInstance().setSuccess(false);
-                            return;
-                        }
-                    }
-                } catch (GlobalCacheSDKException e) {
-                    log.info("clientNodeConfEnv failed.");
-                    System.out.println("deploy client compile env failed");
-                    UserHolder.getInstance().getAutopipe().add("deploy client compile env failed");
-                    UserHolder.getInstance().setIsdeployfinished(true);
-                    UserHolder.getInstance().setSuccess(false);
-                    e.printStackTrace();
-                    return;
-
-                }
-
-                log.info("clientNodeConfEnv success.");
-                UserHolder.getInstance().getAutopipe().add("deploy client compile env success");
-                // client compile pkg
-
 
                 log.info("clientNodeBuildPkgs start.");
+                // 客户端节点编译
+                {
 
-                try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeBuildPkgs().entrySet()) {
-                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                            ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
-                            if (errorCodeEntity.getErrorCode() != 0) {
+                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
+                    try {
+                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeBuildPkgs().entrySet()) {
+                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
+                            } else {
                                 log.info("clientNodeBuildPkgs failed.");
-                                UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
+                                UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs失败");
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 UserHolder.getInstance().setSuccess(false);
                                 return;
                             }
-                        } else {
-                            log.info("clientNodeBuildPkgs failed.");
-                            UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
-                            UserHolder.getInstance().setIsdeployfinished(true);
-                            UserHolder.getInstance().setSuccess(false);
-                            return;
+                        }
+                    } catch (GlobalCacheSDKException e) {
+                        log.info("clientNodeBuildPkgs failed.");
+                        System.out.println("clientNodeBuildPkgs失败");
+                        e.printStackTrace();
+                        UserHolder.getInstance().setSuccess(false);
+                        UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs失败");
+                        UserHolder.getInstance().setIsdeployfinished(true);
+                        return;
+                    }
+
+                    int countDown = entityMap.size();
+                    while (countDown > 0) {
+                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
+                            AsyncEntity entity = entry.getValue();
+                            try {
+                                String line = entity.readLine();
+                                if (line == null) {
+
+                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
+                                    countDown -= 1;
+                                    continue;
+                                }
+//                                System.out.println(entry.getKey() + ": " + line);
+                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
+                            } catch (AsyncThreadException e) {
+                                System.err.println("异步线程异常");
+                            }
                         }
                     }
-                } catch (GlobalCacheSDKException e) {
-                    log.info("clientNodeBuildPkgs failed.");
-                    System.out.println("client compile pkg failed");
-                    UserHolder.getInstance().getAutopipe().add("client compile pkg failed");
-                    UserHolder.getInstance().setIsdeployfinished(true);
-                    UserHolder.getInstance().setSuccess(false);
-                    e.printStackTrace();
-                    return;
+                    log.info("clientNodeBuildPkgs success.");
+                    UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs success");
 
                 }
-
-                log.info("clientNodeBuildPkgs success.");
-                UserHolder.getInstance().getAutopipe().add("client compile pkg success");
-                
-                UserHolder.getInstance().getAutopipe().add("编译软件包成功");
-
 
                 log.info("allNodeCephConfEnv start.");
                 // 配置Ceph基础环境
@@ -1005,7 +997,7 @@ public class AutoDeployService {
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 System.out.println("配置ntp客户端失败");
                                 UserHolder.getInstance().setSuccess(false);
-                                return ;
+                                return;
                             }
                         }
                     } catch (GlobalCacheSDKException e) {
@@ -1015,7 +1007,7 @@ public class AutoDeployService {
                         UserHolder.getInstance().setIsdeployfinished(true);
                         UserHolder.getInstance().setSuccess(false);
                         System.out.println("配置ntp客户端失败");
-                        return ;
+                        return;
                     }
 
                     log.info("ntpClientNodeConfEnv success.");
@@ -1055,7 +1047,7 @@ public class AutoDeployService {
                                 UserHolder.getInstance().getAutopipe().add("安装ceph失败");
                                 UserHolder.getInstance().setIsdeployfinished(true);
                                 System.out.println("安装ceph失败");
-                                return ;
+                                return;
 
                             }
                         }
@@ -1066,7 +1058,7 @@ public class AutoDeployService {
                         UserHolder.getInstance().getAutopipe().add("安装ceph失败");
                         UserHolder.getInstance().setIsdeployfinished(true);
                         System.out.println("安装ceph失败");
-                        return ;
+                        return;
 
                     }
                     log.info("cephNOdeInstallPkgs success.");
@@ -1142,9 +1134,7 @@ public class AutoDeployService {
                     }
                 }
 
-               
                 System.out.println("client节点部署成功");
-
 
                 log.info("serverNodeConfEnv start.");
                 // 配置GlobalCache服务端环境
@@ -1346,7 +1336,7 @@ public class AutoDeployService {
                         }
                     }
                 }
-                
+
                 log.info("gcServiceControl start.");
                 // 首次启动GlobalCache服务
                 {
