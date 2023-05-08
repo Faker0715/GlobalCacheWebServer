@@ -133,6 +133,50 @@ public class AutoDeployService {
         } else if (isMemory) {
             map.put("reason", "内存不合法");
         }
+
+
+        String rolename = "";
+        if (isConnected) {
+            try {
+                for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryHostNameInfo(ipAddress).entrySet()) {
+                    if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                        HostNameInfo hostNameInfo = (HostNameInfo) (entry.getValue().getData());
+                        rolename = hostNameInfo.getHostname();
+                        System.out.println("rolename " + rolename);
+                    } else {
+                        System.out.println("接口调用失败");
+                    }
+                }
+            } catch (GlobalCacheSDKException e) {
+                System.out.println("接口调用失败");
+                e.printStackTrace();
+            }
+        }else{
+            rolename = "";
+        }
+        boolean ceph = false;
+        boolean ceph1 = false;
+        boolean client = false;
+        map.put("rolename", rolename);
+        if(rolename == "ceph"){
+            ceph = true;
+            map.put("ceph",true);
+            map.put("ceph1",false);
+            map.put("client",false);
+        }
+        else if(rolename == "ceph1"){
+            ceph1 = true;
+            map.put("ceph",false);
+            map.put("ceph1",true);
+            map.put("client",false);
+        }
+        else if(rolename == "client"){
+            client = true;
+            map.put("ceph",false);
+            map.put("ceph1",false);
+            map.put("client",false);
+        }
+
         map.put("isConnected", isConnected);
         map.put("isCpu", isCpu);
         map.put("isMemory", isMemory);
@@ -152,6 +196,10 @@ public class AutoDeployService {
                 autoEntity.setisMemory(isMemory);
                 autoEntity.setLocalIPv4(ipAddress);
                 autoEntity.setClusterIPv4(ipAddress);
+                autoEntity.setCeph(ceph);
+                autoEntity.setCeph1(ceph1);
+                autoEntity.setClient(client);
+                autoEntity.setRoleName(rolename);
                 List<AutoList.AutoEntity> list = new ArrayList<>();
                 userHolder.getAutoMap().get(token).getAutoEntityArrayList().add(autoEntity);
             }
