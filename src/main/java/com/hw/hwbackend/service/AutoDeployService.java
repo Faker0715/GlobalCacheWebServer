@@ -157,7 +157,7 @@ public class AutoDeployService {
         boolean ceph = false;
         boolean ceph1 = false;
         boolean client = false;
-        map.put("rolename", rolename);
+        map.put("roleName", rolename);
         if(rolename.equals("ceph1")){
             ceph1 = true;
             map.put("ceph",false);
@@ -869,7 +869,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -920,7 +920,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -973,7 +973,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -1022,7 +1022,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
@@ -1072,7 +1072,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -1123,7 +1123,7 @@ public class AutoDeployService {
                                     countDown -= 1;
                                     continue;
                                 }
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
@@ -1174,7 +1174,7 @@ public class AutoDeployService {
                                     continue;
                                 }
                                 UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-//                                System.out.println(entry.getKey() + ": " + line);
+                                System.out.println(entry.getKey() + ": " + line);
                             } catch (AsyncThreadException e) {
                                 System.err.println("异步线程异常");
                             }
