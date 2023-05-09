@@ -126,11 +126,11 @@ public class AutoDeployService {
         }
         //创建返回信息
         map.put("isValid", isValid);
-        if (isConnected) {
+        if (!isConnected) {
             map.put("reason", "未连接成功");
-        } else if (isCpu) {
+        } else if (!isCpu) {
             map.put("reason", "cpu不合法");
-        } else if (isMemory) {
+        } else if (!isMemory) {
             map.put("reason", "内存不合法");
         }
 
@@ -158,19 +158,19 @@ public class AutoDeployService {
         boolean ceph1 = false;
         boolean client = false;
         map.put("rolename", rolename);
-        if(rolename == "ceph"){
-            ceph = true;
-            map.put("ceph",true);
-            map.put("ceph1",false);
-            map.put("client",false);
-        }
-        else if(rolename == "ceph1"){
+        if(rolename.equals("ceph1")){
             ceph1 = true;
             map.put("ceph",false);
             map.put("ceph1",true);
             map.put("client",false);
         }
-        else if(rolename == "client"){
+        else if(rolename.contains("ceph")){
+            ceph = true;
+            map.put("ceph",true);
+            map.put("ceph1",false);
+            map.put("client",false);
+        }
+        else {
             client = true;
             map.put("ceph",false);
             map.put("ceph1",false);
