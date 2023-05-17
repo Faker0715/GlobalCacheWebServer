@@ -18,16 +18,6 @@ import java.util.TimeZone;
 public class HwBackendApplication {
 
     public static void main(String[] args) {
-//        System.out.println(TimeZone.getDefault().getID());
-//        System.out.println(System.currentTimeMillis());
-//        LocalDateTime now = LocalDateTime.now();
-// 获取指定时区的ZoneId对象
-//        ZoneId zoneId = ZoneId.of("Asia/Shanghai");
-// 将LocalDateTime对象和ZoneId对象组合成ZonedDateTime对象
-//        ZonedDateTime zonedDateTime = ZonedDateTime.of(now, zoneId);
-//        System.out.println(zonedDateTime.getHour());
-//        System.out.println(zonedDateTime.getMinute());
-//        System.out.println(zonedDateTime.getSecond());
         SpringApplication.run(HwBackendApplication.class, args);
     }
 
