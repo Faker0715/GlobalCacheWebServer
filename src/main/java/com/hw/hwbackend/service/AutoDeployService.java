@@ -474,7 +474,8 @@ public class AutoDeployService {
         //设置集群信息
         autolist.setPnet((String) jsonobject.get("pnet"));
         autolist.setCnet((String) jsonobject.get("cnet"));
-        autolist.setNetMask((String) jsonobject.get("netMask"));
+        autolist.setPubMask((String) jsonobject.get("pubMask"));
+        autolist.setCluMask((String) jsonobject.get("cluMask"));
         autolist.setPtNum(jsonobject.getIntValue("ptNum"));
         autolist.setPgNum(jsonobject.getIntValue("pgNum"));
         //保存
@@ -497,7 +498,8 @@ public class AutoDeployService {
         //设置返回信息
         returnmap.put("pnet", autolist.getPnet());
         returnmap.put("cnet", autolist.getCnet());
-        returnmap.put("netMask", autolist.getNetMask());
+        returnmap.put("pubMask", autolist.getPubMask());
+        returnmap.put("cluMask", autolist.getPubMask());
         returnmap.put("ptNum", autolist.getPtNum());
         returnmap.put("pgNum", autolist.getPgNum());
 
@@ -536,7 +538,8 @@ public class AutoDeployService {
         //设置返回信息
         returnmap.put("pnet", autolist.getPnet());
         returnmap.put("cnet", autolist.getCnet());
-        returnmap.put("netMask", autolist.getNetMask());
+        returnmap.put("pubMask", autolist.getPubMask());
+        returnmap.put("cluMask", autolist.getCluMask());
         returnmap.put("ptNum", autolist.getPtNum());
         returnmap.put("pgNum", autolist.getPgNum());
 
@@ -635,17 +638,29 @@ public class AutoDeployService {
                     if (cachearray.size() > 0)
                         cacheDiskList.put(entity.getName(), cachearray);
                 }
-                String[] ip = autolist.getNetMask().split("\\.");
-                long ipnum = (Long.parseLong(ip[0]) << 24) + (Long.parseLong(ip[1]) << 16) + (Long.parseLong(ip[2]) << 8) + (Long.parseLong(ip[3]));
-                int onesCount = 0;
+                String[] pubMask = autolist.getPubMask().split("\\.");
+                long pubnum = (Long.parseLong(pubMask[0]) << 24) + (Long.parseLong(pubMask[1]) << 16) + (Long.parseLong(pubMask[2]) << 8) + (Long.parseLong(pubMask[3]));
+                int pubonesCount = 0;
                 for (int i = 0; i < 32; i++) {
-                    if ((ipnum & (1 << i)) != 0) {
-                        onesCount++;
+                    if ((pubnum & (1 << i)) != 0) {
+                        pubonesCount++;
                     }
                 }
-                System.out.println("Count: " + onesCount);
-                autolist.setCnet(autolist.getCnet() + "/" + onesCount);
-                autolist.setPnet(autolist.getPnet() + "/" + onesCount);
+                System.out.println("pubCount: " + pubonesCount);
+
+
+                String[] cluMask = autolist.getCluMask().split("\\.");
+                long clunum = (Long.parseLong(cluMask[0]) << 24) + (Long.parseLong(cluMask[1]) << 16) + (Long.parseLong(cluMask[2]) << 8) + (Long.parseLong(cluMask[3]));
+                int cluonesCount = 0;
+                for (int i = 0; i < 32; i++) {
+                    if ((clunum & (1 << i)) != 0) {
+                        cluonesCount++;
+                    }
+                }
+                System.out.println("cluCount: " + cluonesCount);
+
+                autolist.setCnet(autolist.getCnet() + "/" + cluonesCount);
+                autolist.setPnet(autolist.getPnet() + "/" + pubonesCount);
                 System.out.println(autolist.getPnet());
                 System.out.println(autolist.getCnet());
 
@@ -660,14 +675,14 @@ public class AutoDeployService {
                     if (entity.getRoleName().equals("ceph1")) {
                         ceph1ip.add(entity.getName());
                         CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true, entity.getLocalIPv4(),
-                                entity.getName(), entity.getClusterIPv4(), autolist.getNetMask(), autolist.getPassword(),
+                                entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
                                 dataDiskList.get(entity.getName()),
                                 cacheDiskList.get(entity.getName()));
                         cephConfs.add(cephConf);
                         cephips.add(entity.getName());
                     } else if (entity.getRoleName().contains("ceph")) {
                         CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
-                                entity.getName(), entity.getClusterIPv4(), autolist.getNetMask(), autolist.getPassword(),
+                                entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
                                 dataDiskList.get(entity.getName()),
                                 cacheDiskList.get(entity.getName()));
                         cephConfs.add(cephConf);
@@ -682,7 +697,7 @@ public class AutoDeployService {
 
                 for (AutoList.AutoEntity entity : autoEntities) {
                     if (entity.getRoleName().contains("client")) {
-                        ClientConf clientConf = new ClientConf(clientname + num, autolist.getNetMask(),
+                        ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),
                                 entity.getName(), autolist.getPassword());
                         clientConfs.add(clientConf);
                         clienthosts.add(entity.getName());

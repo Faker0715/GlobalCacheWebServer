@@ -12,7 +12,9 @@ public class AutoList {
     private String pnet;
 
     private String cnet;
-    private String netMask;
+    private String pubMask;
+
+    private String cluMask;
 
     private Integer ptNum;
     private Integer pgNum;
