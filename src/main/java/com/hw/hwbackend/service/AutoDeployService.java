@@ -151,30 +151,28 @@ public class AutoDeployService {
                 System.out.println("接口调用失败");
                 e.printStackTrace();
             }
-        }else{
+        } else {
             rolename = "";
         }
         boolean ceph = false;
         boolean ceph1 = false;
         boolean client = false;
         map.put("roleName", rolename);
-        if(rolename.equals("ceph1")){
+        if (rolename.equals("ceph1")) {
             ceph1 = true;
-            map.put("ceph",false);
-            map.put("ceph1",true);
-            map.put("client",false);
-        }
-        else if(rolename.contains("ceph")){
+            map.put("ceph", false);
+            map.put("ceph1", true);
+            map.put("client", false);
+        } else if (rolename.contains("ceph")) {
             ceph = true;
-            map.put("ceph",true);
-            map.put("ceph1",false);
-            map.put("client",false);
-        }
-        else {
+            map.put("ceph", true);
+            map.put("ceph1", false);
+            map.put("client", false);
+        } else {
             client = true;
-            map.put("ceph",false);
-            map.put("ceph1",false);
-            map.put("client",false);
+            map.put("ceph", false);
+            map.put("ceph1", false);
+            map.put("client", false);
         }
 
         map.put("isConnected", isConnected);
@@ -200,6 +198,44 @@ public class AutoDeployService {
                 autoEntity.setCeph1(ceph1);
                 autoEntity.setClient(client);
                 autoEntity.setRoleName(rolename);
+
+                DiskInfo diskInfo = new DiskInfo();
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryDiskInfo(hosts).entrySet()) {
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            diskInfo = (DiskInfo) entry.getValue().getData();
+                            ArrayList<DiskInfo.Disk> disksList = diskInfo.getDisksList();
+                            ArrayList<AutoList.AutoEntity.DataDisk> dataDisks = new ArrayList<>();
+                            ArrayList<AutoList.AutoEntity.CacheDisk> cacheDisks = new ArrayList<>();
+                            int dataid = 0;
+                            int cacheid = 0;
+                            for (DiskInfo.Disk disk : disksList) {
+                                if (disk.getType() == DiskInfo.DiskType.ROTA) {
+                                    AutoList.AutoEntity.DataDisk dataDisk = new AutoList.AutoEntity.DataDisk();
+                                    dataDisk.setId(dataid++);
+                                    dataDisk.setType("SD");
+                                    dataDisk.setName(disk.getName());
+                                    dataDisks.add(dataDisk);
+                                } else {
+                                    AutoList.AutoEntity.CacheDisk cacheDisk = new AutoList.AutoEntity.CacheDisk();
+                                    cacheDisk.setId(cacheid++);
+                                    cacheDisk.setType("nvme");
+                                    cacheDisk.setName(disk.getName());
+                                    cacheDisks.add(cacheDisk);
+                                }
+                            }
+                            //保存
+                            autoEntity.setCacheDisk(cacheDisks);
+                            autoEntity.setDataDisk(dataDisks);
+                            System.out.println("cachedisks: " + cacheDisks.size() + " datadisks: " + dataDisks.size());
+                        } else {
+                            System.out.println(entry.getValue().getStatusCode());
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("接口调用失败");
+                    e.printStackTrace();
+                }
                 List<AutoList.AutoEntity> list = new ArrayList<>();
                 userHolder.getAutoMap().get(token).getAutoEntityArrayList().add(autoEntity);
             }
