@@ -379,7 +379,8 @@ public class AutoDeployService {
                             }
                         }
                     } else {
-//                        System.out.println(entry.getValue().getStatusCode());
+                        System.out.println(entry.getValue().getStatusCode());
+                        log.info(""+entry.getValue().getStatusCode());
                     }
                 }
             } catch (GlobalCacheSDKException e) {
@@ -424,6 +425,7 @@ public class AutoDeployService {
                 if (ipList.get(i).getName().equals(jsonArray.get(j).getName())) {
                     ipList.get(i).setLocalIPv4(jsonArray.get(j).getLocalIPv4());
                     ipList.get(i).setClusterIPv4(jsonArray.get(j).getClusterIPv4());
+                    ipList.get(i).setRemoteIPv4(jsonArray.get(j).getRemoteIPv4());
                 }
             }
         }
@@ -552,7 +554,7 @@ public class AutoDeployService {
         String returnstr = "";
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
-            returnstr += userHolder.getAutopipe().poll() + "|";
+            returnstr += userHolder.getAutopipe().poll() + "\n";
         }
         HashMap<String, Object> returnmap = new HashMap<>();
         returnmap.put("installLogInfo", returnstr);

@@ -32,6 +32,7 @@ public class AutoList {
         String roleName;
         String localIPv4;
         String clusterIPv4;
+        String remoteIPv4;
         boolean isConnected;
         boolean isCpu;
         boolean isMemory;
