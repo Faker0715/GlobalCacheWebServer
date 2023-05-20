@@ -37,7 +37,7 @@ public class AbstractSaveService {
     @XxlJob("saveIprelation")
     @XxlRegister(cron = "0 0 0/1 * * ?",author = "Faker",jobDesc = "saveIprelation",triggerStatus = 1)
     void saveIprelation() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         iprelationSave.IprelationSchedule();
@@ -46,7 +46,7 @@ public class AbstractSaveService {
     @XxlJob("saveCpu")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "saveCpu",triggerStatus = 1)
     void saveCpu() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         cpuSave.CpuSchedule();
@@ -55,7 +55,7 @@ public class AbstractSaveService {
     @XxlJob("saveDisk")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "saveDisk",triggerStatus = 1)
     void saveDisk() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         diskSave.DiskSchedule();
@@ -64,7 +64,7 @@ public class AbstractSaveService {
     @XxlJob("saveCpuCalender")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "saveCpuCalender",triggerStatus = 1)
     void saveCpuCalender() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         cpuCalenderSave.CpuCalenderSchedule();
@@ -73,7 +73,7 @@ public class AbstractSaveService {
     @XxlJob("saveMemory")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "saveMemory",triggerStatus = 1)
     void saveMemory() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         memorySave.MemorySchedule();
@@ -82,7 +82,7 @@ public class AbstractSaveService {
     @XxlJob("saveNetwork")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "saveNetwork",triggerStatus = 1)
     void saveNetwork() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         networkSave.NetworkSchedule();
@@ -90,7 +90,7 @@ public class AbstractSaveService {
     @XxlJob("savePgList")
     @XxlRegister(cron = "5 0/10 * * * ?",author = "Faker",jobDesc = "savePgList",triggerStatus = 1)
     void savePglist() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         pgListSave.PgListSchedule();
@@ -99,7 +99,7 @@ public class AbstractSaveService {
     @XxlJob("savePtList")
     @XxlRegister(cron = "10 0/10 * * * ?",author = "Faker",jobDesc = "savePtList",triggerStatus = 1)
     void savePtlist() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         ptListSave.PtListSchedule();
@@ -107,7 +107,7 @@ public class AbstractSaveService {
     @XxlJob("saveHealthList")
     @XxlRegister(cron = "3 0/10 * * * ?",author = "Faker",jobDesc = "saveHealthList",triggerStatus = 1)
     void saveHealthList() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         healthListSave.HealthListSchedule();

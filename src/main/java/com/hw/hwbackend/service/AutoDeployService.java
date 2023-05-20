@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static com.hw.globalcachesdk.ExecuteNode.CEPH1_ONLY;
 import static com.hw.globalcachesdk.ExecuteNode.ALL_CLIENT_NODES;
+import static com.hw.hwbackend.util.UserHolder.STATE.*;
 
 //自动化部署的业务类
 @Service
@@ -100,7 +101,7 @@ public class AutoDeployService {
         hosts.add(ipAddress);
         //获取节点状态
         try {
-            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware(hosts).entrySet()) {
+            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware().entrySet()) {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
@@ -287,7 +288,7 @@ public class AutoDeployService {
         Map<String, ErrorCodeEntity> entityMap = new HashMap<>(hosts.size());
         //检查硬件状态
         try {
-            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware(hosts).entrySet()) {
+            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware().entrySet()) {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
@@ -380,7 +381,7 @@ public class AutoDeployService {
                         }
                     } else {
                         System.out.println(entry.getValue().getStatusCode());
-                        log.info(""+entry.getValue().getStatusCode());
+                        log.info("" + entry.getValue().getStatusCode());
                     }
                 }
             } catch (GlobalCacheSDKException e) {
@@ -551,7 +552,78 @@ public class AutoDeployService {
     //集群部署
     public ResponseResult getStartInstall(String token) {
         UserHolder userHolder = UserHolder.getInstance();
+        AutoList autolist = userHolder.getAutoMap().get(token);
+
+        // 此阶段结束
+        Runnable stateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                userHolder.setRunning(true);
+                switch (userHolder.getState()) {
+                    case STATE_INIT:
+                        GlobalCache_Compile(token);
+                        try {
+                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
+                                if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    userHolder.setState(STATE_COMPILE);
+                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                } else {
+                                    log.info("checkCompile failed.");
+                                    UserHolder.getInstance().getAutopipe().add("checkCompile失败");
+                                    UserHolder.getInstance().setSuccess(false);
+                                    return;
+                                }
+                            }
+                        } catch (GlobalCacheSDKException e) {
+                            log.info("checkCompile failed.");
+                            System.out.println("clientNodeConfCompileEnv失败");
+                            e.printStackTrace();
+                            UserHolder.getInstance().setSuccess(false);
+                            UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv失败");
+                            return;
+                        }
+                        break;
+                    case STATE_COMPILE:
+                        GlobalCache_Distribute(token);
+                        try {
+                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkDistribute().entrySet()) {
+                                if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    userHolder.setState(STATE_DISTRIBUTE);
+                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                } else {
+                                    log.info("checkdistribute failed.");
+                                    UserHolder.getInstance().getAutopipe().add("checkdistribute 失败");
+                                    UserHolder.getInstance().setSuccess(false);
+                                    return;
+                                }
+                            }
+                        } catch (GlobalCacheSDKException e) {
+                            log.info("checkdistribute failed.");
+                            System.out.println("checkdistribute 失败");
+                            e.printStackTrace();
+                            UserHolder.getInstance().setSuccess(false);
+                            UserHolder.getInstance().getAutopipe().add("checkdistribute 失败");
+                            return;
+                        }
+                        break;
+
+                    case STATE_DISTRIBUTE:
+                        break;
+                    case STATE_CLIENT:
+                        break;
+                    case STATE_SERVER:
+                        break;
+                    default:
+                        break;
+                }
+                userHolder.setRunning(false);
+            }
+        };
         String returnstr = "";
+        Thread thread = new Thread(stateRunnable);
+        if (userHolder.isRunning() == false) {
+            thread.start();
+        }
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
             returnstr += userHolder.getAutopipe().poll() + "\n";
@@ -563,7 +635,7 @@ public class AutoDeployService {
         } else {
             returnmap.put("isEnd", false);
         }
-        Runnable myRunnable = new Runnable() {
+        Runnable finishRunnable = new Runnable() {
             public void run() {
                 String ceph1ip = "";
                 List<Ceph> cephs = new ArrayList<>();
@@ -599,907 +671,292 @@ public class AutoDeployService {
                 }
             }
         };
-        Thread thread = new Thread(myRunnable);
-        if (userHolder.isIsdeployfinished() && userHolder.isSuccess()) {
+        Thread finishThread = new Thread();
+        if (userHolder.isRunning() == false && userHolder.isSuccess()) {
             thread.start();
         }
-
-
+        returnmap.put("nowStep",userHolder.getStateNum());
+        returnmap.put("nowEnd",userHolder.isRunning() == false);
         return new ResponseResult<Map<String, Object>>(returnmap);
+    }
+
+    void GlobalCache_Init(String token) {
+        UserHolder userHolder = UserHolder.getInstance();
+        AutoList autolist = userHolder.getAutoMap().get(token);
+
+        ArrayList<CephConf> cephConfs = new ArrayList<>();
+        ArrayList<ClientConf> clientConfs = new ArrayList<>();
+        ClusterConf clusterConf = new ClusterConf();
+
+        Map<String, ArrayList<String>> dataDiskList = new HashMap<>();
+        Map<String, ArrayList<String>> cacheDiskList = new HashMap<>();
+
+        for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
+            ArrayList<AutoList.AutoEntity.DataDisk> datalist = entity.getDataList();
+            ArrayList<String> dataarray = new ArrayList<>();
+            for (int i = 0; i < datalist.size(); ++i) {
+                dataarray.add(datalist.get(i).getName());
+            }
+            if (dataarray.size() > 0)
+                dataDiskList.put(entity.getName(), dataarray);
+        }
+        for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
+            ArrayList<AutoList.AutoEntity.CacheDisk> cachelist = entity.getCacheList();
+            ArrayList<String> cachearray = new ArrayList<>();
+            for (int i = 0; i < cachelist.size(); ++i) {
+                cachearray.add(cachelist.get(i).getName());
+            }
+            if (cachearray.size() > 0)
+                cacheDiskList.put(entity.getName(), cachearray);
+        }
+        String[] pubMask = autolist.getPubMask().split("\\.");
+        long pubnum = (Long.parseLong(pubMask[0]) << 24) + (Long.parseLong(pubMask[1]) << 16) + (Long.parseLong(pubMask[2]) << 8) + (Long.parseLong(pubMask[3]));
+        int pubonesCount = 0;
+        for (int i = 0; i < 32; i++) {
+            if ((pubnum & (1 << i)) != 0) {
+                pubonesCount++;
+            }
+        }
+        System.out.println("pubCount: " + pubonesCount);
+
+
+        String[] cluMask = autolist.getCluMask().split("\\.");
+        long clunum = (Long.parseLong(cluMask[0]) << 24) + (Long.parseLong(cluMask[1]) << 16) + (Long.parseLong(cluMask[2]) << 8) + (Long.parseLong(cluMask[3]));
+        int cluonesCount = 0;
+        for (int i = 0; i < 32; i++) {
+            if ((clunum & (1 << i)) != 0) {
+                cluonesCount++;
+            }
+        }
+        System.out.println("cluCount: " + cluonesCount);
+
+        autolist.setCnet(autolist.getCnet() + "/" + cluonesCount);
+        autolist.setPnet(autolist.getPnet() + "/" + pubonesCount);
+
+
+        System.out.println(autolist.getPnet());
+        log.info(autolist.getPnet());
+        System.out.println(autolist.getCnet());
+        log.info(autolist.getCnet());
+
+
+        List<AutoList.AutoEntity> autoEntities = autolist.getAutoEntityArrayList();
+        int num = 1;
+        int name_num = 2;
+        String cephname = "ceph";
+        ArrayList<String> ceph1ip = new ArrayList<>();
+        ArrayList<String> cephips = new ArrayList<>();
+        for (AutoList.AutoEntity entity : autoEntities) {
+            if (entity.getRoleName().equals("ceph1")) {
+                ceph1ip.add(entity.getName());
+                CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true, entity.getLocalIPv4(),
+                        entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
+                        dataDiskList.get(entity.getName()),
+                        cacheDiskList.get(entity.getName()));
+                cephConfs.add(cephConf);
+                cephips.add(entity.getName());
+            } else if (entity.getRoleName().contains("ceph")) {
+                CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
+                        entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
+                        dataDiskList.get(entity.getName()),
+                        cacheDiskList.get(entity.getName()));
+                cephConfs.add(cephConf);
+                ++name_num;
+                cephips.add(entity.getName());
+            }
+        }
+
+        num = 1;
+        String clientname = "client";
+        ArrayList<String> clienthosts = new ArrayList<>();
+
+        for (AutoList.AutoEntity entity : autoEntities) {
+            if (entity.getRoleName().contains("client")) {
+                ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),
+                        entity.getName(), autolist.getPassword());
+                clientConfs.add(clientConf);
+                clienthosts.add(entity.getName());
+                ++num;
+            }
+        }
+
+        clusterConf.setPtNum(autolist.getPtNum());
+        clusterConf.setPgNum(autolist.getPgNum());
+        clusterConf.setPublicNetwork(autolist.getPnet());
+        clusterConf.setClusterNetwork(autolist.getCnet());
+        log.info("initClusterSettings start.");
+        try {
+            GlobalCacheSDK.initClusterSettings(cephConfs, clientConfs, clusterConf);
+        } catch (GlobalCacheSDKException e) {
+            UserHolder.getInstance().getAutopipe().add("配置文件初始化失败");
+            UserHolder.getInstance().setIsdeployfinished(true);
+            UserHolder.getInstance().setSuccess(false);
+            System.out.println("配置文件初始化失败");
+            log.info("initClusterSettings failed");
+            e.printStackTrace();
+            return;
+        }
+
+        log.info("initClusterSettings success");
+        UserHolder.getInstance().getAutopipe().add("配置文件初始化成功");
+        System.out.println("配置文件初始化成功");
+    }
+
+    void GlobalCache_Compile(String token) {
+        UserHolder userHolder = UserHolder.getInstance();
+        List<AutoList.AutoEntity> autoEntities = userHolder.getAutoMap().get(token).getAutoEntityArrayList();
+        ArrayList<String> hosts = new ArrayList<>();
+        for (AutoList.AutoEntity entity : autoEntities) {
+            hosts.add(entity.getName());
+        }
+        log.info("compileNodeBuildPkgs start.");
+        // 编译软件
+        {
+            Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
+            try {
+                for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeBuildPkgs().entrySet()) {
+                    if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                        entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
+                    } else {
+                        log.info("compileNodeBuildPkgs failed.");
+                        UserHolder.getInstance().getAutopipe().add("编译软件失败");
+                        UserHolder.getInstance().setIsdeployfinished(true);
+                        UserHolder.getInstance().setSuccess(false);
+                        return;
+                    }
+                }
+            } catch (GlobalCacheSDKException e) {
+                log.info("compileNodeBuildPkgs failed.");
+                System.out.println("编译软件失败");
+                e.printStackTrace();
+                UserHolder.getInstance().setSuccess(false);
+                UserHolder.getInstance().getAutopipe().add("编译软件失败");
+                UserHolder.getInstance().setIsdeployfinished(true);
+                return;
+            }
+
+            log.info("compileNodeBuildPkgs success.");
+            System.out.println("编译软件成功");
+            int countDown = entityMap.size();
+            while (countDown > 0) {
+                for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
+                    AsyncEntity entity = entry.getValue();
+                    try {
+                        String line = entity.readLine();
+                        if (line == null) {
+
+                            entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
+                            countDown -= 1;
+                            continue;
+                        }
+                        UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
+                        System.out.println(entry.getKey() + ": " + line);
+                    } catch (AsyncThreadException e) {
+                        System.err.println("异步线程异常");
+                    }
+                }
+            }
+        }
+    }
+
+    void GlobalCache_Distribute(String token) {
+        UserHolder userHolder = UserHolder.getInstance();
+        List<AutoList.AutoEntity> autoEntities = userHolder.getAutoMap().get(token).getAutoEntityArrayList();
+        ArrayList<String> hosts = new ArrayList<>();
+        for (AutoList.AutoEntity entity : autoEntities) {
+            hosts.add(entity.getName());
+        }
+        log.info("compileNodeDistributePkgs start.");
+        // 分发软件包
+        {
+            Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
+            try {
+                for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeDistributePkgs().entrySet()) {
+                    if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                        entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
+                    } else {
+                        log.info("compileNodeDistributePkgs failed.");
+                        UserHolder.getInstance().getAutopipe().add("分发软件包失败");
+                        UserHolder.getInstance().setIsdeployfinished(true);
+                        UserHolder.getInstance().setSuccess(false);
+                        return;
+                    }
+                }
+            } catch (GlobalCacheSDKException e) {
+                log.info("compileNodeDistributePkgs failed.");
+                System.out.println("分发软件包失败");
+                e.printStackTrace();
+                UserHolder.getInstance().setSuccess(false);
+                UserHolder.getInstance().getAutopipe().add("分发软件包失败");
+                UserHolder.getInstance().setIsdeployfinished(true);
+                return;
+            }
+
+            log.info("compileNodeDistributePkgs success.");
+            System.out.println("分发软件包成功");
+
+            int countDown = entityMap.size();
+            while (countDown > 0) {
+                for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
+                    AsyncEntity entity = entry.getValue();
+                    try {
+                        String line = entity.readLine();
+                        if (line == null) {
+
+                            entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
+                            countDown -= 1;
+                            continue;
+                        }
+                        System.out.println(entry.getKey() + ": " + line);
+                        UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
+                    } catch (AsyncThreadException e) {
+                        System.err.println("异步线程异常");
+                    }
+                }
+            }
+        }
+    }
+
+    void GlobalCache_Conf(String token) {
+
+    }
+
+    void GlobalCache_Client(String token) {
+
+    }
+
+    void GlobalCache_Server(String token) {
+
     }
 
     //集群部署
     public ResponseResult getBeginInstall(String token) {
+        UserHolder userHolder = UserHolder.getInstance();
+        AutoList autolist = userHolder.getAutoMap().get(token);
         Runnable myRunnable = new Runnable() {
             public void run() {
-                UserHolder userHolder = UserHolder.getInstance();
-                AutoList autolist = userHolder.getAutoMap().get(token);
-
-                ArrayList<CephConf> cephConfs = new ArrayList<>();
-                ArrayList<ClientConf> clientConfs = new ArrayList<>();
-                ClusterConf clusterConf = new ClusterConf();
-
-                Map<String, ArrayList<String>> dataDiskList = new HashMap<>();
-                Map<String, ArrayList<String>> cacheDiskList = new HashMap<>();
-
-                for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
-                    ArrayList<AutoList.AutoEntity.DataDisk> datalist = entity.getDataList();
-                    ArrayList<String> dataarray = new ArrayList<>();
-                    for (int i = 0; i < datalist.size(); ++i) {
-                        dataarray.add(datalist.get(i).getName());
-                    }
-                    if (dataarray.size() > 0)
-                        dataDiskList.put(entity.getName(), dataarray);
-                }
-                for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
-                    ArrayList<AutoList.AutoEntity.CacheDisk> cachelist = entity.getCacheList();
-                    ArrayList<String> cachearray = new ArrayList<>();
-                    for (int i = 0; i < cachelist.size(); ++i) {
-                        cachearray.add(cachelist.get(i).getName());
-                    }
-                    if (cachearray.size() > 0)
-                        cacheDiskList.put(entity.getName(), cachearray);
-                }
-                String[] pubMask = autolist.getPubMask().split("\\.");
-                long pubnum = (Long.parseLong(pubMask[0]) << 24) + (Long.parseLong(pubMask[1]) << 16) + (Long.parseLong(pubMask[2]) << 8) + (Long.parseLong(pubMask[3]));
-                int pubonesCount = 0;
-                for (int i = 0; i < 32; i++) {
-                    if ((pubnum & (1 << i)) != 0) {
-                        pubonesCount++;
-                    }
-                }
-                System.out.println("pubCount: " + pubonesCount);
-
-
-                String[] cluMask = autolist.getCluMask().split("\\.");
-                long clunum = (Long.parseLong(cluMask[0]) << 24) + (Long.parseLong(cluMask[1]) << 16) + (Long.parseLong(cluMask[2]) << 8) + (Long.parseLong(cluMask[3]));
-                int cluonesCount = 0;
-                for (int i = 0; i < 32; i++) {
-                    if ((clunum & (1 << i)) != 0) {
-                        cluonesCount++;
-                    }
-                }
-                System.out.println("cluCount: " + cluonesCount);
-
-                autolist.setCnet(autolist.getCnet() + "/" + cluonesCount);
-                autolist.setPnet(autolist.getPnet() + "/" + pubonesCount);
-                System.out.println(autolist.getPnet());
-                System.out.println(autolist.getCnet());
-
-
-                List<AutoList.AutoEntity> autoEntities = autolist.getAutoEntityArrayList();
-                int num = 1;
-                int name_num = 2;
-                String cephname = "ceph";
-                ArrayList<String> ceph1ip = new ArrayList<>();
-                ArrayList<String> cephips = new ArrayList<>();
-                for (AutoList.AutoEntity entity : autoEntities) {
-                    if (entity.getRoleName().equals("ceph1")) {
-                        ceph1ip.add(entity.getName());
-                        CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true, entity.getLocalIPv4(),
-                                entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
-                                dataDiskList.get(entity.getName()),
-                                cacheDiskList.get(entity.getName()));
-                        cephConfs.add(cephConf);
-                        cephips.add(entity.getName());
-                    } else if (entity.getRoleName().contains("ceph")) {
-                        CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
-                                entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
-                                dataDiskList.get(entity.getName()),
-                                cacheDiskList.get(entity.getName()));
-                        cephConfs.add(cephConf);
-                        ++name_num;
-                        cephips.add(entity.getName());
-                    }
-                }
-
-                num = 1;
-                String clientname = "client";
-                ArrayList<String> clienthosts = new ArrayList<>();
-
-                for (AutoList.AutoEntity entity : autoEntities) {
-                    if (entity.getRoleName().contains("client")) {
-                        ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),
-                                entity.getName(), autolist.getPassword());
-                        clientConfs.add(clientConf);
-                        clienthosts.add(entity.getName());
-                        ++num;
-                    }
-                }
-
-                clusterConf.setPtNum(autolist.getPtNum());
-                clusterConf.setPgNum(autolist.getPgNum());
-
-                clusterConf.setPublicNetwork(autolist.getPnet());
-                clusterConf.setClusterNetwork(autolist.getCnet());
-                log.info("initClusterSettings start.");
-                try {
-                    GlobalCacheSDK.initClusterSettings(cephConfs, clientConfs, clusterConf);
-                } catch (GlobalCacheSDKException e) {
-                    UserHolder.getInstance().getAutopipe().add("配置文件初始化失败");
-                    UserHolder.getInstance().setIsdeployfinished(true);
-                    UserHolder.getInstance().setSuccess(false);
-                    System.out.println("配置文件初始化失败");
-                    log.info("initClusterSettings failed");
-                    e.printStackTrace();
-                    return;
-                }
-
-                log.info("initClusterSettings success");
-                UserHolder.getInstance().getAutopipe().add("配置文件初始化成功");
-                System.out.println("配置文件初始化成功");
-                ArrayList<String> hosts = new ArrayList<>();
-
-                for (AutoList.AutoEntity entity : autoEntities) {
-                    hosts.add(entity.getName());
-                }
-
-                log.info("compileNodeConfEnv start.");
-                // 配置编译节点
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("compileNodeConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("配置编译节点失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                System.out.println("配置编译节点失败");
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("compileNodeConfEnv failed.");
-                        UserHolder.getInstance().getAutopipe().add("配置编译节点失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        UserHolder.getInstance().setSuccess(false);
-                        System.out.println("配置编译节点失败");
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    log.info("compileNodeConfEnv success.");
-                    System.out.println("配置编译节点成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                // 将数据发送给前端s
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("compileNodeBuildPkgs start.");
-                // 编译软件
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeBuildPkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("compileNodeBuildPkgs failed.");
-                                UserHolder.getInstance().getAutopipe().add("编译软件失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("compileNodeBuildPkgs failed.");
-                        System.out.println("编译软件失败");
-                        e.printStackTrace();
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("编译软件失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        return;
-                    }
-
-                    log.info("compileNodeBuildPkgs success.");
-                    System.out.println("编译软件成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("compileNodeDistributePkgs start.");
-                // 分发软件包
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.compileNodeDistributePkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("compileNodeDistributePkgs failed.");
-                                UserHolder.getInstance().getAutopipe().add("分发软件包失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("compileNodeDistributePkgs failed.");
-                        System.out.println("分发软件包失败");
-                        e.printStackTrace();
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("分发软件包失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        return;
-                    }
-
-                    log.info("compileNodeDistributePkgs success.");
-                    System.out.println("分发软件包成功");
-
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("clientNodeConfCompileEnv start.");
-                // 编译环境配置
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeConfCompileEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("clientNodeConfCompileEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("clientNodeConfCompileEnv failed.");
-                        System.out.println("clientNodeConfCompileEnv失败");
-                        e.printStackTrace();
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        return;
-                    }
-
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-
-                    log.info("clientNodeConfCompileEnv success.");
-                    UserHolder.getInstance().getAutopipe().add("clientNodeConfCompileEnv success");
-                }
-
-                log.info("clientNodeBuildPkgs start.");
-                // 客户端节点编译
-                {
-
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeBuildPkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("clientNodeBuildPkgs failed.");
-                                UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("clientNodeBuildPkgs failed.");
-                        System.out.println("clientNodeBuildPkgs失败");
-                        e.printStackTrace();
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        return;
-                    }
-
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                    log.info("clientNodeBuildPkgs success.");
-                    UserHolder.getInstance().getAutopipe().add("clientNodeBuildPkgs success");
-
-                }
-
-                log.info("allNodeCephConfEnv start.");
-                // 配置Ceph基础环境
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.allNodeCephConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("allNodeCephConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("配置ceph基础环境失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("allNodeCephConfEnv failed.");
-                        UserHolder.getInstance().getAutopipe().add("配置ceph基础环境失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        UserHolder.getInstance().setSuccess(false);
-                        System.out.println("配置ceph基础环境失败");
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    log.info("allNodeCephConfEnv success.");
-                    System.out.println("配置ceph基础环境成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("ntpServerNodeConfEnv start.");
-                // 配置ntp服务端
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.ntpServerNodeConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("ntpServerNodeConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("配置ntp服务端失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("ntpServerNodeConfEnv failed.");
-                        UserHolder.getInstance().getAutopipe().add("配置ntp服务端失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("配置ntp服务端失败");
-                        UserHolder.getInstance().setSuccess(false);
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    log.info("ntpServerNodeConfEnv success.");
-                    System.out.println("配置ntp服务端成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("ntpClientNodeConfEnv start.");
-                // 配置ntp客户端
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.ntpClientNodeConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-
-                                log.info("ntpClientNodeConfEnv failed.");
-                                UserHolder.getInstance().getAutopipe().add("配置ntp客户端失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("配置ntp客户端失败");
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                        log.info("ntpClientNodeConfEnv failed.");
-                        UserHolder.getInstance().getAutopipe().add("配置ntp客户端失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        UserHolder.getInstance().setSuccess(false);
-                        System.out.println("配置ntp客户端失败");
-                        return;
-                    }
-
-                    log.info("ntpClientNodeConfEnv success.");
-                    System.out.println("配置ntp客户端成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("cephNOdeInstallPkgs start.");
-                // 安装Ceph
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.cephNodeInstallPkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("cephNOdeInstallPkgs failed.");
-                                UserHolder.getInstance().setSuccess(false);
-                                UserHolder.getInstance().getAutopipe().add("安装ceph失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("安装ceph失败");
-                                return;
-
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                        log.info("cephNOdeInstallPkgs failed.");
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("安装ceph失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("安装ceph失败");
-                        return;
-
-                    }
-                    log.info("cephNOdeInstallPkgs success.");
-                    System.out.println("安装ceph成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("ceph1NodeDeployCeph start.");
-                // 部署Ceph
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.ceph1NodeDeployCeph().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("ceph1NodeDeployCeph failed.");
-                                UserHolder.getInstance().getAutopipe().add("部署ceph失败");
-                                UserHolder.getInstance().setSuccess(false);
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("部署cpeh失败");
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                        log.info("ceph1NodeDeployCeph failed.");
-                        UserHolder.getInstance().getAutopipe().add("部署ceph失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        UserHolder.getInstance().setSuccess(false);
-                        System.out.println("部署ceph失败");
-                        return;
-
-                    }
-                    log.info("ceph1NodeDeployCeph success.");
-                    System.out.println("部署ceph成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                System.out.println("client节点部署成功");
-
-                log.info("serverNodeConfEnv start.");
-                // 配置GlobalCache服务端环境
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.serverNodeConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("serverNodeConfEnv failed.");
-                                UserHolder.getInstance().setSuccess(false);
-                                UserHolder.getInstance().getAutopipe().add("配置globalcache服务端环境失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("配置globalcache服务端环境失败");
-                                return;
-
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("serverNodeConfEnv failed.");
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("配置globalcache服务端环境失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("配置globalcache服务端环境失败");
-                        e.printStackTrace();
-                        return;
-                    }
-                    log.info("serverNodeConfEnv success.");
-                    System.out.println("配置globalcache服务端环境成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("clientNodeConfEnv start.");
-                // 配置GlobalCache客户端环境
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeConfEnv().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("clientNodeConfEnv failed.");
-                                UserHolder.getInstance().setSuccess(false);
-                                UserHolder.getInstance().getAutopipe().add("配置globalcache客户端环境失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("配置globalcache客户端环境失败");
-                                return;
-
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("clientNodeConfEnv failed.");
-                        e.printStackTrace();
-                        UserHolder.getInstance().setSuccess(false);
-                        UserHolder.getInstance().getAutopipe().add("配置globalcache客户端环境失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("配置globalcache客户端环境失败");
-                        return;
-
-                    }
-                    log.info("clientNodeConfEnv success.");
-
-                    System.out.println("配置globalcache客户端环境成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("serverNodeInstallPkgs start.");
-                // 安装GlobalCache服务端
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.serverNodeInstallPkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("serverNodeInstallPkgs failed.");
-                                UserHolder.getInstance().setSuccess(false);
-                                UserHolder.getInstance().getAutopipe().add("安装globalcache服务端环境失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("安装globalcache服务端环境失败");
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        log.info("serverNodeInstallPkgs failed.");
-                        UserHolder.getInstance().setSuccess(false);
-                        e.printStackTrace();
-                        UserHolder.getInstance().getAutopipe().add("安装globalcache服务端环境失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("安装globalcache服务端环境失败");
-                        return;
-                    }
-                    log.info("serverNodeInstallPkgs success.");
-                    System.out.println("安装globalcache服务端环境成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("clientNodeInstallPkgs start.");
-                // 安装GlobalCache客户端
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.clientNodeInstallPkgs().entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("clientNodeInstallPkgs failed.");
-                                UserHolder.getInstance().getAutopipe().add("安装globalcache客户端环境失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("安装globalcache客户端环境失败");
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                        log.info("clientNodeInstallPkgs failed.");
-                        UserHolder.getInstance().getAutopipe().add("安装globalcache客户端环境失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        System.out.println("安装globalcache客户端环境失败");
-                        UserHolder.getInstance().setSuccess(false);
-                        return;
-                    }
-                    log.info("clientNodeInstallPkgs success.");
-
-                    System.out.println("安装globalcache客户端环境成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                System.out.println(entry.getKey() + ": " + line);
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-                log.info("gcServiceControl start.");
-                // 首次启动GlobalCache服务
-                {
-                    Map<String, AsyncEntity> entityMap = new HashMap<>(hosts.size());
-                    try {
-                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.gcServiceControl(cephips, "start").entrySet()) {
-                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                entityMap.put(entry.getKey(), (AsyncEntity) entry.getValue().getData());
-                            } else {
-                                log.info("gcServiceControl failed.");
-                                UserHolder.getInstance().getAutopipe().add("初始化globalcache失败");
-                                UserHolder.getInstance().setIsdeployfinished(true);
-                                System.out.println("初始化globalcache失败");
-                                UserHolder.getInstance().setSuccess(false);
-                                return;
-                            }
-                        }
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                        log.info("gcServiceControl failed.");
-                        UserHolder.getInstance().getAutopipe().add("初始化globalcache失败");
-                        UserHolder.getInstance().setIsdeployfinished(true);
-                        UserHolder.getInstance().setSuccess(false);
-                        System.out.println("初始化globalcache失败");
-                        return;
-                    }
-
-                    log.info("gcServiceControl success.");
-                    System.out.println("初始化globalcache成功");
-                    int countDown = entityMap.size();
-                    while (countDown > 0) {
-                        for (Map.Entry<String, AsyncEntity> entry : entityMap.entrySet()) {
-                            AsyncEntity entity = entry.getValue();
-                            try {
-                                String line = entity.readLine();
-                                if (line == null) {
-
-                                    entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
-                                    countDown -= 1;
-                                    continue;
-                                }
-                                UserHolder.getInstance().getAutopipe().add(entry.getKey() + ": " + line);
-                                System.out.println(entry.getKey() + ": " + line);
-                            } catch (AsyncThreadException e) {
-                                System.err.println("异步线程异常");
-                            }
-                        }
-                    }
-                }
-
-
-                System.out.println("globalcache服务启动成功");
-                UserHolder.getInstance().getAutopipe().add("安装成功");
-                UserHolder.getInstance().setIsdeployfinished(true);
-                UserHolder.getInstance().setSuccess(true);
+                GlobalCache_Init(token);
+                userHolder.setState(STATE_INIT);
+                userHolder.setStateNum(userHolder.getStateNum() + 1);
+//                System.out.println("globalcache服务启动成功");
+//                UserHolder.getInstance().getAutopipe().add("安装成功");
+//                UserHolder.getInstance().setIsdeployfinished(true);
+//                UserHolder.getInstance().setSuccess(true);
             }
         };
         Thread thread = new Thread(myRunnable);
         thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         HashMap<String, Object> returnmap = new HashMap<>();
-        returnmap.put("isBegin", true);
-
+        if (userHolder.getState() == STATE_INIT) {
+            returnmap.put("isBegin", true);
+        } else {
+            returnmap.put("isBegin", false);
+        }
         return new ResponseResult<Map<String, Object>>(returnmap);
     }
 }

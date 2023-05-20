@@ -61,7 +61,7 @@ public class AbstractService {
     @XxlJob("getCpuCalender")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getCpuCalender",triggerStatus = 1)
     public void getCpuCalender() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         cpuCalenderService.sendMsg();
@@ -70,7 +70,7 @@ public class AbstractService {
     @XxlJob("getCpuData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getCpuData",triggerStatus = 1)
     public void getCpuData() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         cpuService.sendMsg();
@@ -78,7 +78,7 @@ public class AbstractService {
     @XxlJob("getMemoryData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getMemoryData",triggerStatus = 1)
     public void getMemoryData() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         memoryService.sendMsg();
@@ -87,7 +87,7 @@ public class AbstractService {
     @XxlJob("getDiskData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getDiskData",triggerStatus = 1)
     public void getDiskData() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         diskService.sendMsg();
@@ -96,7 +96,7 @@ public class AbstractService {
     @XxlJob("getNetData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getNetData",triggerStatus = 1)
     public void getNetData() {
-        if(UserHolder.getInstance().isIsdeployfinished() == false){
+        if(UserHolder.getInstance().isSuccess() == false){
             return;
         }
         networkService.sendMsg();

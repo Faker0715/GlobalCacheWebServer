@@ -18,6 +18,23 @@ public class UserHolder {
     private boolean isSuccess = false;
     private BlockingQueue<String> autopipe = new LinkedBlockingQueue<String>();
     private String ceph1 = "";
+    private boolean isRunning = false;
+
+
+    public enum STATE{
+        STATE_NULL,
+        STATE_CONF,
+        STATE_INIT,
+        STATE_COMPILE,
+        STATE_DISTRIBUTE,
+        STATE_CLIENT,
+        STATE_SERVER,
+    }
+    private STATE state = STATE.STATE_NULL;
+    private String stateStr = "null";
+
+    private Integer stateNum = 0;
+
     private UserHolder() {
         urlarray.add("/getCpuCalender");
         urlarray.add("/getCpuData");
