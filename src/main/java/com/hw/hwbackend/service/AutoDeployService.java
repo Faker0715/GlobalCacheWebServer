@@ -441,27 +441,31 @@ public class AutoDeployService {
             @Override
             public void run() {
                 userHolder.setRunning(true);
+                boolean flag = true;
                 switch (userHolder.getState()) {
                     case STATE_NULL:
                         initDeployConf(token);
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkConf().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    userHolder.setState(STATE_CONF);
-                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
-                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
+                                    flag = false;
                                     log.info("checkConf failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkConf失败");
                                     UserHolder.getInstance().setSuccess(false);
                                 }
                             }
                         } catch (GlobalCacheSDKException e) {
+                            flag = false;
                             log.info("checkConf failed.");
                             System.out.println("checkConf 失败");
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkConf 失败");
+                        }
+                        if(flag){
+                            userHolder.setState(STATE_CONF);
+                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_CONF:
@@ -469,21 +473,24 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    userHolder.setState(STATE_COMPILE_SERVER);
-                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
-                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
+                                    flag = false;
                                     log.info("checkCompile failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkCompile 失败");
                                     UserHolder.getInstance().setSuccess(false);
                                 }
                             }
                         } catch (GlobalCacheSDKException e) {
+                            flag = false;
                             log.info("checkCompile failed.");
                             System.out.println("checkCompile 失败");
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkCompile 失败");
+                        }
+                        if(flag){
+                            userHolder.setState(STATE_COMPILE_SERVER);
+                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_SERVER:
@@ -491,21 +498,24 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkDistribute().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    userHolder.setState(STATE_DISTRIBUTE);
-                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
-                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
+                                    flag = false;
                                     log.info("checkDistribute failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkDistribute 失败");
                                     UserHolder.getInstance().setSuccess(false);
                                 }
                             }
                         } catch (GlobalCacheSDKException e) {
+                            flag = false;
                             log.info("checkDistribute failed.");
                             System.out.println("checkDistribute 失败");
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkDistribute 失败");
+                        }
+                        if(flag){
+                            userHolder.setState(STATE_DISTRIBUTE);
+                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_DISTRIBUTE:
@@ -513,21 +523,24 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    userHolder.setState(STATE_COMPILE_CLIENT);
-                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
-                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
+                                    flag = false;
                                     log.info("checkClient failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkClient 失败");
                                     UserHolder.getInstance().setSuccess(false);
                                 }
                             }
                         } catch (GlobalCacheSDKException e) {
+                            flag = false;
                             log.info("checkClient failed.");
                             System.out.println("checkClient 失败");
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkClient 失败");
+                        }
+                        if(flag){
+                            userHolder.setState(STATE_COMPILE_CLIENT);
+                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_CLIENT:
@@ -535,32 +548,35 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCeph().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    userHolder.setState(STATE_CEPH);
-                                    userHolder.setStateNum(userHolder.getStateNum() + 1);
-                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
+                                    flag = false;
                                     log.info("checkCeph failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkCeph失败");
                                     UserHolder.getInstance().setSuccess(false);
                                 }
                             }
                         } catch (GlobalCacheSDKException e) {
+                            flag = false;
                             log.info("checkCeph failed.");
                             System.out.println("checkCeph 失败");
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkCeph失败");
                         }
+                        if(flag){
+                            userHolder.setState(STATE_CEPH);
+                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        }
                         break;
                     case STATE_CEPH:
                         gcacheDeploy(token);
-                        boolean bclient = false;
-                        boolean bserver = false;
+                        boolean bclient = true;
+                        boolean bserver = true;
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkServer().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    bserver = true;
                                 } else {
+                                    bserver = false;
                                     log.info("checkServer failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkServer 失败");
                                     UserHolder.getInstance().setSuccess(false);
@@ -569,8 +585,8 @@ public class AutoDeployService {
 
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkClient().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    bclient = true;
                                 } else {
+                                    bclient = false;
                                     log.info("checkClient failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkClient 失败");
                                     UserHolder.getInstance().setSuccess(false);
@@ -579,6 +595,8 @@ public class AutoDeployService {
                         } catch (GlobalCacheSDKException e) {
                             log.info("checkServer or checkClient failed.");
                             System.out.println("checkServer or checkClient 失败");
+                            bclient = false;
+                            bserver = false;
                             e.printStackTrace();
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkServer or checkClient 失败");
@@ -611,9 +629,9 @@ public class AutoDeployService {
         String returnstr = "";
         Thread statethread = new Thread(stateRunnable);
         if (userHolder.isRunning() == false) {
+            System.out.println("come in" + this);
             statethread.start();
         }
-        // 保证执行完成
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
