@@ -100,7 +100,7 @@ public class AutoDeployService {
         hosts.add(ipAddress);
         //获取节点状态
         try {
-            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware().entrySet()) {
+            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkHardware(hosts).entrySet()) {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
@@ -194,6 +194,7 @@ public class AutoDeployService {
                 autoEntity.setisMemory(isMemory);
                 autoEntity.setLocalIPv4(ipAddress);
                 autoEntity.setClusterIPv4(ipAddress);
+                autoEntity.setRemoteIPv4(ipAddress);
                 autoEntity.setCeph(ceph);
                 autoEntity.setCeph1(ceph1);
                 autoEntity.setClient(client);
@@ -587,6 +588,12 @@ public class AutoDeployService {
         Thread statethread = new Thread(stateRunnable);
         if (userHolder.isRunning() == false) {
             statethread.start();
+        }
+        // 保证执行完成
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
