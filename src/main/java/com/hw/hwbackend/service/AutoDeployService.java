@@ -423,11 +423,8 @@ public class AutoDeployService {
         String str = JSONObject.toJSONString(data);
         JSONObject jsonobject = JSONObject.parseObject(str);
         String token = (String) jsonobject.get("token");
-        Integer nowStep = (Integer) jsonobject.get("nowStep");
 
         UserHolder userHolder = UserHolder.getInstance();
-        UserHolder.STATE curState = userHolder.getState();
-        System.out.println("forestate: " + nowStep + " " + "serverstate: " + userHolder.getStateNum());
         HashMap<String, Object> returnmap = new HashMap<>();
 
         if (userHolder.isReady()) {
@@ -443,14 +440,6 @@ public class AutoDeployService {
 
         }
 
-//        if (nowStep < userHolder.getStateNum()) {
-//            returnmap.put("installLogInfo", "");
-//            returnmap.put("nowStep", userHolder.getStateNum());
-//            returnmap.put("nowEnd", true);
-//            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
-//            returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
-//            return new ResponseResult<Map<String, Object>>(returnmap);
-//        }
         Runnable stateRunnable = new Runnable() {
             @Override
             public void run() {
@@ -503,8 +492,6 @@ public class AutoDeployService {
                         }
                         if (flag) {
                             userHolder.setReady(true);
-//                            userHolder.setState(STATE_COMPILE_SERVER);
-//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_SERVER:
@@ -529,8 +516,6 @@ public class AutoDeployService {
                         }
                         if (flag) {
                             userHolder.setReady(true);
-//                            userHolder.setState(STATE_DISTRIBUTE);
-//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_DISTRIBUTE:
@@ -555,8 +540,6 @@ public class AutoDeployService {
                         }
                         if (flag) {
                             userHolder.setReady(true);
-//                            userHolder.setState(STATE_COMPILE_CLIENT);
-//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_CLIENT:
@@ -581,8 +564,6 @@ public class AutoDeployService {
                         }
                         if (flag) {
                             userHolder.setReady(true);
-//                            userHolder.setState(STATE_CEPH);
-//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_CEPH:
@@ -619,8 +600,6 @@ public class AutoDeployService {
                             UserHolder.getInstance().getAutopipe().add("checkServer or checkClient 失败");
                         }
                         if (bserver && bclient) {
-//                            userHolder.setState(STATE_GCDEPLOY);
-//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                             userHolder.setReady(true);
                         }
 
@@ -711,7 +690,7 @@ public class AutoDeployService {
             returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
             returnmap.put("nowSuccess", false);
         }else{
-            if(userHolder.isReady()){
+            if(userHolder.isSuccess() || userHolder.isReady()){
                 userHolder.setReady(false);
                 userHolder.setStateNum(userHolder.getStateNum() + 1);
                 userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
