@@ -638,11 +638,7 @@ public class AutoDeployService {
         for (int i = 0; i < len; ++i) {
             returnstr += userHolder.getAutopipe().poll() + "\n";
         }
-        if (userHolder.isSuccess()) {
-            returnmap.put("isEnd", true);
-        } else {
-            returnmap.put("isEnd", false);
-        }
+
 
         Runnable finishRunnable = new Runnable() {
             public void run() {
@@ -683,6 +679,11 @@ public class AutoDeployService {
             finishThread.start();
         }
 
+        if (userHolder.isSuccess()) {
+            returnmap.put("isEnd", true);
+        } else {
+            returnmap.put("isEnd", false);
+        }
         returnmap.put("installLogInfo", returnstr);
         if(userHolder.isRunning()){
             returnmap.put("nowStep", userHolder.getStateNum());
