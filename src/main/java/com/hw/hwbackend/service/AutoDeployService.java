@@ -427,6 +427,19 @@ public class AutoDeployService {
         UserHolder userHolder = UserHolder.getInstance();
         HashMap<String, Object> returnmap = new HashMap<>();
 
+        if(userHolder.isSuccess()){
+            returnmap.put("installLogInfo", "");
+            userHolder.setState(STATE_GCINIT);
+            returnmap.put("nowStep", userHolder.getStateNum());
+            returnmap.put("nowEnd", true);
+            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+            returnmap.put("nowSuccess", true);
+            returnmap.put("isEnd", true);
+            return new ResponseResult<Map<String, Object>>(returnmap);
+        }
+
+
+
         if (userHolder.isReady() || userHolder.isSuccess()) {
             returnmap.put("installLogInfo", "");
             userHolder.setStateNum(userHolder.getStateNum() + 1);
@@ -435,11 +448,7 @@ public class AutoDeployService {
             returnmap.put("nowEnd", true);
             returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
             returnmap.put("nowSuccess", true);
-            if(userHolder.isSuccess()){
-                returnmap.put("isEnd",true);
-            } else{
-                returnmap.put("isEnd",false);
-            }
+            returnmap.put("isEnd", false);
             userHolder.setReady(false);
             return new ResponseResult<Map<String, Object>>(returnmap);
 
