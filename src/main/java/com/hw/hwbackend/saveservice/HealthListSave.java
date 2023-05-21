@@ -111,7 +111,7 @@ public class HealthListSave {
         flag = false;
         try {
             // 记录当前接口默认超时等待时间
-            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_CLUSTER_AlARM_INFO).getTimeout();
+            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_CLUSTER_ALARM_INFO).getTimeout();
         } catch (GlobalCacheSDKException e) {
             System.out.println("获取执行时间失败");
             e.printStackTrace();
@@ -149,7 +149,7 @@ public class HealthListSave {
                     } else if (entry.getValue().getStatusCode() == StatusCode.EXEC_COMMAND_TIMEOUT) {
                         // 处理请求超时的情况 -> 增长至 increaseFactor * curTimeout
                         curTimeout = (int) Math.ceil(curTimeout * increaseFactor);
-                        GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_CLUSTER_AlARM_INFO, curTimeout);
+                        GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_CLUSTER_ALARM_INFO, curTimeout);
                     }
                 }
             } catch (GlobalCacheSDKException | InterruptedException e) {
@@ -158,7 +158,7 @@ public class HealthListSave {
             }
         }
         try {
-            GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_CLUSTER_AlARM_INFO, oldTimeout);
+            GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_CLUSTER_ALARM_INFO, oldTimeout);
         } catch (GlobalCacheSDKException e) {
             System.out.println("设置执行时间失败");
             e.printStackTrace();
