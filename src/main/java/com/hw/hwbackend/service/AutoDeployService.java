@@ -802,6 +802,7 @@ public class AutoDeployService {
             log.info("initClusterSettings failed");
             e.printStackTrace();
         }
+        System.out.println("初始化完成");
     }
 
     /**
