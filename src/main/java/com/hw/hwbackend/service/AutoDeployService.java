@@ -449,6 +449,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     userHolder.setState(STATE_CONF);
                                     userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
                                     log.info("checkConf failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkConf失败");
@@ -470,6 +471,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     userHolder.setState(STATE_COMPILE_SERVER);
                                     userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
                                     log.info("checkCompile failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkCompile 失败");
@@ -491,6 +493,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     userHolder.setState(STATE_DISTRIBUTE);
                                     userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
                                     log.info("checkDistribute failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkDistribute 失败");
@@ -512,6 +515,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     userHolder.setState(STATE_COMPILE_CLIENT);
                                     userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
                                     log.info("checkClient failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkClient 失败");
@@ -533,6 +537,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     userHolder.setState(STATE_CEPH);
                                     userHolder.setStateNum(userHolder.getStateNum() + 1);
+                                    System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                                 } else {
                                     log.info("checkCeph failed.");
                                     UserHolder.getInstance().getAutopipe().add("checkCeph失败");
@@ -581,12 +586,15 @@ public class AutoDeployService {
                         if (bserver && bclient) {
                             userHolder.setState(STATE_GCDEPLOY);
                             userHolder.setStateNum(userHolder.getStateNum() + 1);
+                            System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                         }
 
                         break;
                     case STATE_GCDEPLOY:
                         gcacheInit(token);
                         userHolder.setState(STATE_GCINIT);
+                        userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
                         if (userHolder.getState() == STATE_GCINIT) {
                             System.out.println("globalcache服务器安装成功");
                             UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
