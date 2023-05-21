@@ -108,7 +108,7 @@ public class IprelationSave {
         ip.setIps(ips);
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.setIprelation(ip);
-        userHolder.setIsdeployfinished(true);
+        userHolder.setSuccess(true);
         userHolder.setCeph1(cephip);
         iprelationData.saveIprelation(ip);
 

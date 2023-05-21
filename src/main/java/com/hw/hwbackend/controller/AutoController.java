@@ -45,19 +45,6 @@ public class AutoController {
         String token = request.getHeader("token");
         return autoDeployService.getIpList(token);
     }
-    //检测节点是否能连接
-    @PostMapping("/getHardwareDetect")
-    public ResponseResult HardwareDetect(@RequestBody Map data){
-        String ipAddress = (String)data.get("ipAddress");
-        String token = (String) data.get("token");
-        return autoDeployService.getHardwareDetect(ipAddress,token);
-    }
-
-    //角色设置
-    @PostMapping("/getRoleSet")
-    public ResponseResult RoleSet(@RequestBody Map data){
-        return autoDeployService.getRoleSet(data);
-    }
     //IP设置
     @PostMapping("/getIPSet")
     public ResponseResult IPSet(@RequestBody Map data){
@@ -78,12 +65,6 @@ public class AutoController {
     @PostMapping("/getAffirmSet")
     public ResponseResult AffirmSet(@RequestBody Map data){
         return autoDeployService.getAffirmSet(data);
-    }
-    //部署
-    @PostMapping("/getBeginInstall")
-    public ResponseResult BeginInstall(@RequestBody Map data){
-        String token = (String) data.get("token");
-        return autoDeployService.getBeginInstall(token);
     }
     //部署
     @PostMapping("/getStartInstall")

@@ -97,10 +97,6 @@ public class UpdateService {
             map.put("ptList","");
             return new ResponseResult<Map<String, Object>>(map);
         }
-//        Map map = new HashMap<>();
-//        map.put("nodeList",nodelist);
-//        map.put("ptList",ptLists.get(0).getPtArrayList());
-//        return new ResponseResult<Map<String, Object>>(map);
     }
 
     public ResponseResult getPtAll(String token){

@@ -46,7 +46,7 @@ public class SessionService {
             List<GlobalCacheUser> globalCacheUsers = this.regMapper.getuser();
             String ceph1 = this.regMapper.getIp();
             UserHolder.getInstance().setCeph1(ceph1);
-            UserHolder.getInstance().setIsdeployfinished(true);
+            UserHolder.getInstance().setSuccess(true);
             log.info("sessionsevice: setceph1ip: " + ceph1);
 
 
@@ -141,6 +141,7 @@ public class SessionService {
             log.info("sessionservice-iprelation idmap: " + idmap.toString());
             log.info("sessionservice-iprelation ips: " + ips.toString());
             UserHolder.getInstance().setIprelation(ip);
+            UserHolder.getInstance().setSuccess(true);
         }
 
 
