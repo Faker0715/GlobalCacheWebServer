@@ -17,6 +17,7 @@ import com.hw.hwbackend.util.UserHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -418,9 +419,24 @@ public class AutoDeployService {
     }
 
     //集群部署
-    public ResponseResult getStartInstall(String token) {
+    public ResponseResult getStartInstall(Map data) {
+        String str = JSONObject.toJSONString(data);
+        JSONObject jsonobject = JSONObject.parseObject(str);
+        String token = (String) jsonobject.get("token");
+        Integer nowStep = (Integer) jsonobject.get("nowStep");
+
         UserHolder userHolder = UserHolder.getInstance();
         UserHolder.STATE curState = userHolder.getState();
+        System.out.println("forestate: " + nowStep + " " + "serverstate: " + userHolder.getStateNum());
+        HashMap<String, Object> returnmap = new HashMap<>();
+        if (nowStep < userHolder.getStateNum()) {
+            returnmap.put("installLogInfo", "");
+            returnmap.put("nowStep", userHolder.getStateNum());
+            returnmap.put("nowEnd", true);
+            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+            returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
+            return new ResponseResult<Map<String, Object>>(returnmap);
+        }
         Runnable stateRunnable = new Runnable() {
             @Override
             public void run() {
@@ -576,7 +592,7 @@ public class AutoDeployService {
                             UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
                             UserHolder.getInstance().setSuccess(true);
                         } else {
-                            System.out.println("globalcache服务启动成功");
+                            System.out.println("globalcache服务启动失败");
                             UserHolder.getInstance().getAutopipe().add("globalcache服务器安装失败");
                             UserHolder.getInstance().setSuccess(false);
                         }
@@ -599,7 +615,6 @@ public class AutoDeployService {
         for (int i = 0; i < len; ++i) {
             returnstr += userHolder.getAutopipe().poll() + "\n";
         }
-        HashMap<String, Object> returnmap = new HashMap<>();
         if (userHolder.isSuccess()) {
             returnmap.put("isEnd", true);
         } else {
@@ -645,11 +660,14 @@ public class AutoDeployService {
             finishThread.start();
         }
 
+
         returnmap.put("installLogInfo", returnstr);
         returnmap.put("nowStep", userHolder.getStateNum());
         returnmap.put("nowEnd", userHolder.isRunning() == false);
         returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
         returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
+
+
         return new ResponseResult<Map<String, Object>>(returnmap);
     }
 

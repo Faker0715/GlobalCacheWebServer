@@ -32,8 +32,6 @@ public class UserHolder {
         STATE_GCINIT
     }
     private STATE state = STATE.STATE_NULL;
-    private String stateStr = "null";
-
     private Integer stateNum = 0;
 
     private UserHolder() {
@@ -44,7 +42,7 @@ public class UserHolder {
         urlarray.add("/getMemoryData");
         urlarray.add("/getMemoryData");
 
-        stateMap.put(STATE.STATE_NULL,"null");
+        stateMap.put(STATE.STATE_NULL,"正在开始");
         stateMap.put(STATE.STATE_CONF,"生成集群部署配置文件");
         stateMap.put(STATE.STATE_COMPILE_SERVER,"服务端依赖包编译");
         stateMap.put(STATE.STATE_DISTRIBUTE,"分发依赖包");

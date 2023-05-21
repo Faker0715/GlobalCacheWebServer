@@ -70,7 +70,7 @@ public class AutoController {
     @PostMapping("/getStartInstall")
     public ResponseResult StartInstall(@RequestBody Map data){
         String token = (String) data.get("token");
-        return autoDeployService.getStartInstall(token);
+        return autoDeployService.getStartInstall(data);
     }
     //返回已经设置的集群信息
     @PostMapping("/getClusterInfo")
