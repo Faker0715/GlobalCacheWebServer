@@ -429,14 +429,28 @@ public class AutoDeployService {
         UserHolder.STATE curState = userHolder.getState();
         System.out.println("forestate: " + nowStep + " " + "serverstate: " + userHolder.getStateNum());
         HashMap<String, Object> returnmap = new HashMap<>();
-        if (nowStep < userHolder.getStateNum()) {
+
+        if (userHolder.isReady()) {
             returnmap.put("installLogInfo", "");
+            userHolder.setStateNum(userHolder.getStateNum() + 1);
+            userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
             returnmap.put("nowStep", userHolder.getStateNum());
             returnmap.put("nowEnd", true);
             returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
-            returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
+            returnmap.put("nowSuccess", true);
+            userHolder.setReady(false);
             return new ResponseResult<Map<String, Object>>(returnmap);
+
         }
+
+//        if (nowStep < userHolder.getStateNum()) {
+//            returnmap.put("installLogInfo", "");
+//            returnmap.put("nowStep", userHolder.getStateNum());
+//            returnmap.put("nowEnd", true);
+//            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+//            returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
+//            return new ResponseResult<Map<String, Object>>(returnmap);
+//        }
         Runnable stateRunnable = new Runnable() {
             @Override
             public void run() {
@@ -463,9 +477,8 @@ public class AutoDeployService {
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkConf 失败");
                         }
-                        if(flag){
-                            userHolder.setState(STATE_CONF);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        if (flag) {
+                            userHolder.setReady(true);
                         }
                         break;
                     case STATE_CONF:
@@ -488,9 +501,10 @@ public class AutoDeployService {
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkCompile 失败");
                         }
-                        if(flag){
-                            userHolder.setState(STATE_COMPILE_SERVER);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        if (flag) {
+                            userHolder.setReady(true);
+//                            userHolder.setState(STATE_COMPILE_SERVER);
+//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_SERVER:
@@ -513,9 +527,10 @@ public class AutoDeployService {
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkDistribute 失败");
                         }
-                        if(flag){
-                            userHolder.setState(STATE_DISTRIBUTE);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        if (flag) {
+                            userHolder.setReady(true);
+//                            userHolder.setState(STATE_DISTRIBUTE);
+//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_DISTRIBUTE:
@@ -538,9 +553,10 @@ public class AutoDeployService {
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkClient 失败");
                         }
-                        if(flag){
-                            userHolder.setState(STATE_COMPILE_CLIENT);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        if (flag) {
+                            userHolder.setReady(true);
+//                            userHolder.setState(STATE_COMPILE_CLIENT);
+//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_COMPILE_CLIENT:
@@ -563,9 +579,10 @@ public class AutoDeployService {
                             UserHolder.getInstance().setSuccess(false);
                             UserHolder.getInstance().getAutopipe().add("checkCeph失败");
                         }
-                        if(flag){
-                            userHolder.setState(STATE_CEPH);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        if (flag) {
+                            userHolder.setReady(true);
+//                            userHolder.setState(STATE_CEPH);
+//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
                         }
                         break;
                     case STATE_CEPH:
@@ -602,9 +619,9 @@ public class AutoDeployService {
                             UserHolder.getInstance().getAutopipe().add("checkServer or checkClient 失败");
                         }
                         if (bserver && bclient) {
-                            userHolder.setState(STATE_GCDEPLOY);
-                            userHolder.setStateNum(userHolder.getStateNum() + 1);
-                            System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
+//                            userHolder.setState(STATE_GCDEPLOY);
+//                            userHolder.setStateNum(userHolder.getStateNum() + 1);
+                            userHolder.setReady(true);
                         }
 
                         break;
@@ -631,12 +648,13 @@ public class AutoDeployService {
         if (userHolder.isRunning() == false) {
             System.out.println("come in" + this);
             statethread.start();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
             returnstr += userHolder.getAutopipe().poll() + "\n";
@@ -686,12 +704,28 @@ public class AutoDeployService {
             finishThread.start();
         }
 
-
         returnmap.put("installLogInfo", returnstr);
-        returnmap.put("nowStep", userHolder.getStateNum());
-        returnmap.put("nowEnd", userHolder.isRunning() == false);
-        returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
-        returnmap.put("nowSuccess", userHolder.isRunning() == false && userHolder.getState() != curState);
+        if(userHolder.isRunning()){
+            returnmap.put("nowStep", userHolder.getStateNum());
+            returnmap.put("nowEnd", false);
+            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+            returnmap.put("nowSuccess", false);
+        }else{
+            if(userHolder.isReady()){
+                userHolder.setReady(false);
+                userHolder.setStateNum(userHolder.getStateNum() + 1);
+                userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
+                returnmap.put("nowStep", userHolder.getStateNum());
+                returnmap.put("nowEnd", true);
+                returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+                returnmap.put("nowSuccess", true);
+            }else{
+                returnmap.put("nowStep", userHolder.getStateNum());
+                returnmap.put("nowEnd", true);
+                returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+                returnmap.put("nowSuccess", false);
+            }
+        }
 
 
         return new ResponseResult<Map<String, Object>>(returnmap);

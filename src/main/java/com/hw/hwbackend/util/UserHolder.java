@@ -18,6 +18,7 @@ public class UserHolder {
     private BlockingQueue<String> autopipe = new LinkedBlockingQueue<String>();
     private String ceph1 = "";
     private boolean isRunning = false;
+    private boolean isReady = false;
 
     private HashMap<STATE,String> stateMap = new HashMap<>();
 
