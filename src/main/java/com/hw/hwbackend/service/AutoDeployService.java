@@ -608,16 +608,9 @@ public class AutoDeployService {
                         gcacheInit(token);
                         userHolder.setState(STATE_GCINIT);
                         userHolder.setStateNum(userHolder.getStateNum() + 1);
-                        System.out.println("nowstate " + userHolder.getState() + " " + "statenum: " + userHolder.getStateNum());
-                        if (userHolder.getState() == STATE_GCINIT) {
-                            System.out.println("globalcache服务器安装成功");
-                            UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
-                            UserHolder.getInstance().setSuccess(true);
-                        } else {
-                            System.out.println("globalcache服务启动失败");
-                            UserHolder.getInstance().getAutopipe().add("globalcache服务器安装失败");
-                            UserHolder.getInstance().setSuccess(false);
-                        }
+                        System.out.println("globalcache服务器安装成功");
+                        UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
+                        UserHolder.getInstance().setSuccess(true);
                 }
                 userHolder.setRunning(false);
             }
@@ -685,13 +678,19 @@ public class AutoDeployService {
             returnmap.put("isEnd", false);
         }
         returnmap.put("installLogInfo", returnstr);
-        if(userHolder.isRunning()){
+        if(userHolder.isSuccess()){
+            returnmap.put("nowStep", userHolder.getStateNum());
+            returnmap.put("nowEnd", true);
+            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+            returnmap.put("nowSuccess", true);
+        }
+        else if(userHolder.isRunning()){
             returnmap.put("nowStep", userHolder.getStateNum());
             returnmap.put("nowEnd", false);
             returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
             returnmap.put("nowSuccess", false);
         }else{
-            if(userHolder.isSuccess() || userHolder.isReady()){
+            if( userHolder.isReady()){
                 userHolder.setReady(false);
                 userHolder.setStateNum(userHolder.getStateNum() + 1);
                 userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
