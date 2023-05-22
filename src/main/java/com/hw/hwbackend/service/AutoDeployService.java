@@ -429,6 +429,7 @@ public class AutoDeployService {
 
         Runnable finishRunnable = new Runnable() {
             public void run() {
+                userHolder.setOneRun(true);
                 System.out.println("线程开始运行");
                 String ceph1ip = "";
                 List<Ceph> cephs = new ArrayList<>();
@@ -464,7 +465,7 @@ public class AutoDeployService {
             }
         };
         Thread finishThread = new Thread(finishRunnable);
-        if (userHolder.isSuccess()) {
+        if (userHolder.isOneRun() == false && userHolder.isSuccess()) {
             finishThread.start();
         }
         if(userHolder.isSuccess()){

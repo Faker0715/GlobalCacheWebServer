@@ -20,6 +20,7 @@ public class UserHolder {
     private boolean isRunning = false;
     private boolean isReady = false;
 
+    private boolean oneRun = false;
     private HashMap<STATE,String> stateMap = new HashMap<>();
 
     public enum STATE{
