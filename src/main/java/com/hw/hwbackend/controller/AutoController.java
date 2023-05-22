@@ -67,9 +67,9 @@ public class AutoController {
         return autoDeployService.getAffirmSet(data);
     }
     //部署
-    @PostMapping("/getStartInstall")
-    public ResponseResult StartInstall(@RequestBody Map data){
-        return autoDeployService.getStartInstall(data);
+    @PostMapping("/getInstall")
+    public ResponseResult Install(@RequestBody Map data){
+        return autoDeployService.getInstall(data);
     }
     //返回已经设置的集群信息
     @PostMapping("/getClusterInfo")

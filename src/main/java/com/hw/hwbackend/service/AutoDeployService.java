@@ -439,7 +439,7 @@ public class AutoDeployService {
     }
 
     //集群部署
-    public ResponseResult getStartInstall(Map data) {
+    public ResponseResult getInstall(Map data) {
         String str = JSONObject.toJSONString(data);
         JSONObject jsonobject = JSONObject.parseObject(str);
         String token = (String) jsonobject.get("token");
