@@ -423,10 +423,16 @@ public class AutoDeployService {
         String str = JSONObject.toJSONString(data);
         JSONObject jsonobject = JSONObject.parseObject(str);
         String token = (String) jsonobject.get("token");
+        Integer nowstep = (Integer) jsonobject.get("nowStep");
 
+        System.out.println("nowstep: " + nowstep);
         UserHolder userHolder = UserHolder.getInstance();
         HashMap<String, Object> returnmap = new HashMap<>();
 
+        if(nowstep < userHolder.getStateNum()){
+            returnmap.put("installLogInfo", "");
+            return new ResponseResult<Map<String, Object>>(returnmap);
+        }
         String returnstr = "";
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
@@ -492,7 +498,7 @@ public class AutoDeployService {
             userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
             returnmap.put("nowStep", userHolder.getStateNum());
             returnmap.put("nowEnd", true);
-            returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+            returnmap.put("nowName", userHolder.getStateMap().get(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]));
             returnmap.put("nowSuccess", true);
             returnmap.put("isEnd", false);
             userHolder.setReady(false);
@@ -768,7 +774,7 @@ public class AutoDeployService {
                 userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
                 returnmap.put("nowStep", userHolder.getStateNum());
                 returnmap.put("nowEnd", true);
-                returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getState()));
+                returnmap.put("nowName", userHolder.getStateMap().get(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]));
                 returnmap.put("nowSuccess", true);
             }else{
                 returnmap.put("nowStep", userHolder.getStateNum());
