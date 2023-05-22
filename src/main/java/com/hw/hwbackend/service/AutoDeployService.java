@@ -623,9 +623,14 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile(clients).entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+
+                                    UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行compilenode检查脚本");
+                                    System.out.println(entry.getKey() + "运行compilenode脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行compilenode检查脚本失败");
+                                        System.out.println(entry.getKey() + "运行compilenode脚本失败");
                                         flag = false;
                                     }
                                 } else {
@@ -652,9 +657,13 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCeph().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行cephDeploy检查脚本");
+                                    System.out.println(entry.getKey() + "运行cephDeploy脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行cephDeploy检查脚本失败");
+                                        System.out.println(entry.getKey() + "运行cephDeploy脚本失败");
                                         flag = false;
                                     }
                                 } else {
