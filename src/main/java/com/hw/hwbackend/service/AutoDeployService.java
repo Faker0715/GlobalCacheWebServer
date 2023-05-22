@@ -525,8 +525,8 @@ public class AutoDeployService {
                                     UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行配置检查脚本");
                                     System.out.println(entry.getKey() + "运行配置检查脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
 
@@ -558,10 +558,10 @@ public class AutoDeployService {
                                     UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行编译检查脚本");
                                     System.out.println(entry.getKey() + "运行编译检查脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
                                         System.out.println(entry.getKey() + "编译检查结果");
                                         UserHolder.getInstance().getAutopipe().add(entry.getKey() + "编译检查结果");
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -589,8 +589,8 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkDistribute().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -618,8 +618,8 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile(clients).entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -647,8 +647,8 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCeph().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -678,8 +678,8 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkServer().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -693,8 +693,8 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkClient().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if(errorCodeEntity.getErrorCode() != 0){
-                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
                                 } else {
@@ -719,7 +719,7 @@ public class AutoDeployService {
 
                         break;
                     case STATE_GCDEPLOY:
-//                        gcacheInit(token);
+                        gcacheInit(token);
                         userHolder.setState(STATE_GCINIT);
                         userHolder.setStateNum(userHolder.getStateNum() + 1);
                         System.out.println("globalcache服务器安装成功");
