@@ -433,6 +433,8 @@ public class AutoDeployService {
         returnmap.put("nowStep", userHolder.getStateNum());
         returnmap.put("nowEnd", userHolder.isRunning() == false);
         returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getStateNum()));
+
+        System.out.println("nowStep: " + userHolder.getStateNum());
         System.out.println("nowName: " + userHolder.getStateMap().get(userHolder.getStateNum()));
         returnmap.put("nowSuccess", userHolder.isReady());
         returnmap.put("isEnd", userHolder.isSuccess());
