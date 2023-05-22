@@ -538,6 +538,7 @@ public class AutoDeployService {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(entry.getKey() + "编译检查结果");
                                         UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
                                     }
