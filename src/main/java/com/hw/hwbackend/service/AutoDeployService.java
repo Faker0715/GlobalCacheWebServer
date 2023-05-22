@@ -682,7 +682,7 @@ public class AutoDeployService {
             }
         };
         Thread finishThread = new Thread(finishRunnable);
-        if (userHolder.isRunning() == false && userHolder.isSuccess()) {
+        if (userHolder.isSuccess()) {
             finishThread.start();
         }
 
