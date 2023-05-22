@@ -20,21 +20,18 @@ public class UserHolder {
     private boolean isRunning = false;
     private boolean isReady = false;
 
-    private boolean oneRun = false;
-    private HashMap<STATE,String> stateMap = new HashMap<>();
+    private HashMap<Integer,String> stateMap = new HashMap<>();
 
     public enum STATE{
-        STATE_NULL,
-        STATE_CONF,
-        STATE_COMPILE_SERVER,
-        STATE_DISTRIBUTE,
-        STATE_COMPILE_CLIENT,
-        STATE_CEPH,
-        STATE_GCDEPLOY,
-        STATE_GCINIT
+        STATE_CONF, // 1
+        STATE_COMPILE_SERVER, // 2
+        STATE_DISTRIBUTE, // 3
+        STATE_COMPILE_CLIENT, // 4
+        STATE_CEPH, // 5
+        STATE_GCDEPLOY, // 6
+        STATE_GCINIT // 7
     }
-    private STATE state = STATE.STATE_NULL;
-    private Integer stateNum = 0;
+    private Integer stateNum = 1;
 
     private UserHolder() {
         urlarray.add("/getCpuCalender");
@@ -44,13 +41,12 @@ public class UserHolder {
         urlarray.add("/getMemoryData");
         urlarray.add("/getMemoryData");
 
-        stateMap.put(STATE.STATE_NULL,"正在开始");
-        stateMap.put(STATE.STATE_CONF,"生成集群部署配置文件");
-        stateMap.put(STATE.STATE_COMPILE_SERVER,"服务端依赖包编译");
-        stateMap.put(STATE.STATE_DISTRIBUTE,"分发依赖包");
-        stateMap.put(STATE.STATE_COMPILE_CLIENT,"客户端依赖包编译");
-        stateMap.put(STATE.STATE_CEPH,"ceph部署");
-        stateMap.put(STATE.STATE_GCDEPLOY,"globalcache部署");
+        stateMap.put(1,"生成集群部署配置文件");
+        stateMap.put(2,"服务端依赖包编译");
+        stateMap.put(3,"分发依赖包");
+        stateMap.put(4,"客户端依赖包编译");
+        stateMap.put(5,"ceph部署");
+        stateMap.put(6,"globalcache部署");
 
     }
 
