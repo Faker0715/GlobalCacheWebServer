@@ -427,6 +427,11 @@ public class AutoDeployService {
         UserHolder userHolder = UserHolder.getInstance();
         HashMap<String, Object> returnmap = new HashMap<>();
 
+        String returnstr = "";
+        int len = userHolder.getAutopipe().size();
+        for (int i = 0; i < len; ++i) {
+            returnstr += userHolder.getAutopipe().poll() + "\n";
+        }
         Runnable finishRunnable = new Runnable() {
             public void run() {
                 userHolder.setOneRun(true);
@@ -469,7 +474,7 @@ public class AutoDeployService {
             finishThread.start();
         }
         if(userHolder.isSuccess()){
-            returnmap.put("installLogInfo", "");
+            returnmap.put("installLogInfo", returnstr);
             userHolder.setState(STATE_GCINIT);
             returnmap.put("nowStep", userHolder.getStateNum());
             returnmap.put("nowEnd", true);
@@ -482,7 +487,7 @@ public class AutoDeployService {
 
 
         if (userHolder.isReady()) {
-            returnmap.put("installLogInfo", "");
+            returnmap.put("installLogInfo", returnstr);
             userHolder.setStateNum(userHolder.getStateNum() + 1);
             userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
             returnmap.put("nowStep", userHolder.getStateNum());
@@ -724,7 +729,6 @@ public class AutoDeployService {
                 userHolder.setRunning(false);
             }
         };
-        String returnstr = "";
         Thread statethread = new Thread(stateRunnable);
         if (userHolder.isRunning() == false) {
             System.out.println("come in" + this);
@@ -736,10 +740,6 @@ public class AutoDeployService {
             }
         }
 
-        int len = userHolder.getAutopipe().size();
-        for (int i = 0; i < len; ++i) {
-            returnstr += userHolder.getAutopipe().poll() + "\n";
-        }
 
 
 
