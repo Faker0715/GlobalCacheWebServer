@@ -481,7 +481,7 @@ public class AutoDeployService {
 
 
 
-        if (userHolder.isReady() || userHolder.isSuccess()) {
+        if (userHolder.isReady()) {
             returnmap.put("installLogInfo", "");
             userHolder.setStateNum(userHolder.getStateNum() + 1);
             userHolder.setState(UserHolder.STATE.values()[userHolder.getState().ordinal()+1]);
@@ -506,6 +506,12 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkConf().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
+
                                 } else {
                                     flag = false;
                                     log.info("checkConf failed.");
@@ -530,6 +536,11 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     flag = false;
                                     log.info("checkCompile failed.");
@@ -554,6 +565,11 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkDistribute().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     flag = false;
                                     log.info("checkDistribute failed.");
@@ -578,6 +594,11 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     flag = false;
                                     log.info("checkClient failed.");
@@ -602,6 +623,11 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCeph().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     flag = false;
                                     log.info("checkCeph failed.");
@@ -628,6 +654,11 @@ public class AutoDeployService {
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkServer().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     bserver = false;
                                     log.info("checkServer failed.");
@@ -638,6 +669,11 @@ public class AutoDeployService {
 
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkClient().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
+                                    if(errorCodeEntity.getErrorCode() != 0){
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        flag = false;
+                                    }
                                 } else {
                                     bclient = false;
                                     log.info("checkClient failed.");
@@ -660,7 +696,7 @@ public class AutoDeployService {
 
                         break;
                     case STATE_GCDEPLOY:
-                        gcacheInit(token);
+//                        gcacheInit(token);
                         userHolder.setState(STATE_GCINIT);
                         userHolder.setStateNum(userHolder.getStateNum() + 1);
                         System.out.println("globalcache服务器安装成功");
