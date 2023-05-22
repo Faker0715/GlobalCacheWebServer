@@ -518,6 +518,7 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkConf().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行配置检查脚本");
+                                    System.out.println(entry.getKey() + "运行配置检查脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     if(errorCodeEntity.getErrorCode() != 0){
                                         UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
@@ -550,8 +551,10 @@ public class AutoDeployService {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile(ceph1).entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     UserHolder.getInstance().getAutopipe().add(entry.getKey() + "运行编译检查脚本");
+                                    System.out.println(entry.getKey() + "运行编译检查脚本");
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     if(errorCodeEntity.getErrorCode() != 0){
+                                        System.out.println(entry.getKey() + "编译检查结果");
                                         UserHolder.getInstance().getAutopipe().add(entry.getKey() + "编译检查结果");
                                         UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                         flag = false;
