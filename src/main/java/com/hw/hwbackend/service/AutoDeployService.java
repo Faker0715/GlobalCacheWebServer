@@ -427,6 +427,46 @@ public class AutoDeployService {
         UserHolder userHolder = UserHolder.getInstance();
         HashMap<String, Object> returnmap = new HashMap<>();
 
+        Runnable finishRunnable = new Runnable() {
+            public void run() {
+                System.out.println("线程开始运行");
+                String ceph1ip = "";
+                List<Ceph> cephs = new ArrayList<>();
+                ArrayList<String> hosts = new ArrayList<>();
+                for (AutoList.AutoEntity entity : userHolder.getAutoMap().get(token).getAutoEntityArrayList()) {
+                    hosts.add(entity.getName());
+                    if (entity.getRoleName().equals("ceph1")) {
+                        ceph1ip = entity.getName();
+                    }
+                    if (entity.getRoleName().contains("ceph")) {
+                        Ceph ceph = new Ceph(entity.getRoleName(), entity.getName());
+                        cephs.add(ceph);
+                    }
+                }
+                // 释放root
+                // 1. 清空role table
+                // 2. 512个 arraylist<string> 保存
+                menuMapper.truncateTable();
+                menuMapper.insertCephs(cephs);
+
+                userHolder.setCeph1(ceph1ip);
+                regMapper.SetIp(ceph1ip);
+                regMapper.setfinished();
+                System.out.println("数据库运行");
+                sessionService.initSession();
+                for (int i = 0; i < hosts.size(); i++) {
+                    try {
+                        GlobalCacheSDK.releaseSession(hosts.get(i), "root");
+                    } catch (GlobalCacheSDKException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        Thread finishThread = new Thread(finishRunnable);
+        if (userHolder.isSuccess()) {
+            finishThread.start();
+        }
         if(userHolder.isSuccess()){
             returnmap.put("installLogInfo", "");
             userHolder.setState(STATE_GCINIT);
@@ -647,44 +687,7 @@ public class AutoDeployService {
         }
 
 
-        Runnable finishRunnable = new Runnable() {
-            public void run() {
-                String ceph1ip = "";
-                List<Ceph> cephs = new ArrayList<>();
-                ArrayList<String> hosts = new ArrayList<>();
-                for (AutoList.AutoEntity entity : userHolder.getAutoMap().get(token).getAutoEntityArrayList()) {
-                    hosts.add(entity.getName());
-                    if (entity.getRoleName().equals("ceph1")) {
-                        ceph1ip = entity.getName();
-                    }
-                    if (entity.getRoleName().contains("ceph")) {
-                        Ceph ceph = new Ceph(entity.getRoleName(), entity.getName());
-                        cephs.add(ceph);
-                    }
-                }
-                // 释放root
-                // 1. 清空role table
-                // 2. 512个 arraylist<string> 保存
-                menuMapper.truncateTable();
-                menuMapper.insertCephs(cephs);
 
-                userHolder.setCeph1(ceph1ip);
-                regMapper.SetIp(ceph1ip);
-                regMapper.setfinished();
-                sessionService.initSession();
-                for (int i = 0; i < hosts.size(); i++) {
-                    try {
-                        GlobalCacheSDK.releaseSession(hosts.get(i), "root");
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        Thread finishThread = new Thread(finishRunnable);
-        if (userHolder.isSuccess()) {
-            finishThread.start();
-        }
 
         if (userHolder.isSuccess()) {
             returnmap.put("isEnd", true);

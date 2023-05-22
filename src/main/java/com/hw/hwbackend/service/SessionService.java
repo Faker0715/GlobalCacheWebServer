@@ -38,7 +38,11 @@ public class SessionService {
     }
 
     public void initSession() {
-
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if (this.regMapper.getfinished() == 1) {
 
             // 得到所有的映射
