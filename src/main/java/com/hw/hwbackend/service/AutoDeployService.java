@@ -500,6 +500,17 @@ public class AutoDeployService {
             public void run() {
                 userHolder.setRunning(true);
                 boolean flag = true;
+                AutoList autolist = userHolder.getAutoMap().get(token);
+                ArrayList<String> ceph1 = new ArrayList<>();
+                ArrayList<String> clients = new ArrayList<>();
+                for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
+                    if (entity.getRoleName().equals("ceph1")) {
+                        ceph1.add(entity.getName());
+                    }
+                    if (entity.getRoleName().contains("client")) {
+                        clients.add(entity.getName());
+                    }
+                }
                 switch (userHolder.getState()) {
                     case STATE_NULL:
                         initDeployConf(token);
@@ -533,8 +544,9 @@ public class AutoDeployService {
                         break;
                     case STATE_CONF:
                         compileDependenciesOnServerNode(token);
+
                         try {
-                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
+                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile(ceph1).entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     if(errorCodeEntity.getErrorCode() != 0){
@@ -593,7 +605,7 @@ public class AutoDeployService {
                     case STATE_DISTRIBUTE:
                         compileDependenciesOnClientNode(token);
                         try {
-                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile().entrySet()) {
+                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkCompile(clients).entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity)entry.getValue().getData();
                                     if(errorCodeEntity.getErrorCode() != 0){
