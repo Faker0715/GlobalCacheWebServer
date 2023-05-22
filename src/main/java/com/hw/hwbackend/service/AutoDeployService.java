@@ -679,6 +679,7 @@ public class AutoDeployService {
                     case 7:
                         gcacheInit(token);
                         userHolder.setStateNum(userHolder.getStateNum() + 1);
+                        userHolder.setReady(true);
                         System.out.println("globalcache服务器安装成功");
                         UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
                         UserHolder.getInstance().setSuccess(true);
