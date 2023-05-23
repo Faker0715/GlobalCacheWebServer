@@ -468,7 +468,7 @@ public class AutoDeployService {
                         clients.add(entity.getName());
                     }
                 }
-                switch (nowStep) {
+                switch (nowStep + 1) {
                     case 1:
                         initDeployConf(token);
                         try {
