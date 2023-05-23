@@ -856,6 +856,7 @@ public class AutoDeployService {
         log.info("initClusterSettings start.");
         try {
             GlobalCacheSDK.initClusterSettings(cephConfs, clientConfs, clusterConf);
+            System.out.println("初始化完成------------------------");
         } catch (GlobalCacheSDKException e) {
             UserHolder.getInstance().getAutopipe().add("配置文件初始化失败");
             UserHolder.getInstance().setSuccess(false);
