@@ -57,10 +57,9 @@ public class AutoDeployService {
 
     //添加节点
     public ResponseResult getAddIP(String ipAddress, String token) {
-        boolean isValid = false;
         UserHolder userHolder = UserHolder.getInstance();
         Map<String, Object> map = new HashMap<>();
-        boolean isConnected = true;
+        boolean isConnected = false;
         boolean isCpu = true;
         boolean isMemory = true;
         boolean isSave = false;
@@ -68,7 +67,7 @@ public class AutoDeployService {
         try {
             isSave = GlobalCacheSDK.isSessionExist(ipAddress, "root");
             if (isSave) {
-                isValid = true;
+                isConnected = true;
             }
         } catch (GlobalCacheSDKException e) {
             e.printStackTrace();
@@ -77,14 +76,14 @@ public class AutoDeployService {
         if (isSave == false) {
             try {
                 GlobalCacheSDK.createSession(ipAddress, "root", userHolder.getAutoMap().get(token).getPassword(), 22);
-                isValid = true;
+                isConnected = true;
             } catch (GlobalCacheSDKException e) {
                 e.printStackTrace();
             }
         } else {
-            isValid = true;
+            isConnected = true;
         }
-        if (isValid == false || ipAddress.equals("0.0.0.0") || ipAddress.equals("127.0.0.1")) {
+        if (isConnected == false || ipAddress.equals("0.0.0.0") || ipAddress.equals("127.0.0.1")) {
             map.put("isValid", false);
             map.put("reason", "输入ip错误");
             map.put("isConnected", false);
@@ -112,9 +111,6 @@ public class AutoDeployService {
         }
         //根据获取的节点状态 设置返回信息
         for (Map.Entry<String, ErrorCodeEntity> entry : entityMap.entrySet()) {
-            if(entry.getValue().getErrorCode() != 0){
-                isConnected = false;
-            }
             if (entry.getValue().getErrorCode() == 1) {
                 isCpu = false;
             }
@@ -127,9 +123,9 @@ public class AutoDeployService {
             }
         }
         //创建返回信息
-        map.put("isValid", isCpu && isMemory && isValid);
+        map.put("isValid", isConnected && isMemory && isCpu);
         String reason = "";
-        if (!isValid) {
+        if (!isConnected) {
             reason += "未连接成功 ";
         } else if (!isCpu) {
             reason += "cpu不合法 ";
@@ -140,7 +136,7 @@ public class AutoDeployService {
 
 
         String rolename = "";
-        if (isConnected && isValid) {
+        if (isConnected && isMemory && isCpu) {
             try {
                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryHostNameInfo(ipAddress).entrySet()) {
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
