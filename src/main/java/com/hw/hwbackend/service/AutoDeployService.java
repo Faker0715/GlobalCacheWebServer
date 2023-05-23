@@ -112,9 +112,6 @@ public class AutoDeployService {
         }
         //根据获取的节点状态 设置返回信息
         for (Map.Entry<String, ErrorCodeEntity> entry : entityMap.entrySet()) {
-            if (entry.getValue().getErrorCode() != 0) {
-                isConnected = false;
-            }
             if (entry.getValue().getErrorCode() == 1) {
                 isCpu = false;
             }
@@ -127,9 +124,9 @@ public class AutoDeployService {
             }
         }
         //创建返回信息
-        map.put("isValid", isValid);
+        map.put("isValid", isCpu && isMemory && isValid);
         String reason = "";
-        if (!isConnected) {
+        if (!isValid) {
             reason += "未连接成功 ";
         } else if (!isCpu) {
             reason += "cpu不合法 ";
