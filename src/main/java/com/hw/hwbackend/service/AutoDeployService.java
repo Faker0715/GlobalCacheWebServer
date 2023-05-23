@@ -121,6 +121,10 @@ public class AutoDeployService {
             if (entry.getValue().getErrorCode() == 2) {
                 isMemory = false;
             }
+            if(entry.getValue().getErrorCode() == 3){
+                isCpu = false;
+                isMemory = false;
+            }
         }
         //创建返回信息
         map.put("isValid", isValid);
