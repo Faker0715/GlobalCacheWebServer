@@ -17,7 +17,6 @@ import com.hw.hwbackend.util.UserHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.hw.hwbackend.util.UserHolder.STATE.*;
 
 //自动化部署的业务类
 @Service
@@ -184,20 +181,20 @@ public class AutoDeployService {
         if (isConnected && isCpu && isMemory) {
             int flag = 0;
             for (int i = 0; i < userHolder.getAutoMap().get(token).getAutoEntityArrayList().size(); ++i) {
-                if (userHolder.getAutoMap().get(token).getAutoEntityArrayList().get(i).getName().equals(ipAddress)) {
+                if (userHolder.getAutoMap().get(token).getAutoEntityArrayList().get(i).getRemoteIPv4().equals(ipAddress)) {
                     flag = 1;
                     break;
                 }
             }
             if (flag == 0) {
                 AutoList.AutoEntity autoEntity = new AutoList.AutoEntity();
-                autoEntity.setName(ipAddress);
+                autoEntity.setRemoteIPv4(ipAddress);
                 autoEntity.setisConnected(isConnected);
                 autoEntity.setisCpu(isCpu);
                 autoEntity.setisMemory(isMemory);
                 autoEntity.setLocalIPv4(ipAddress);
                 autoEntity.setClusterIPv4(ipAddress);
-                autoEntity.setRemoteIPv4(ipAddress);
+                autoEntity.setPublicIPv4(ipAddress);
                 autoEntity.setCeph(ceph);
                 autoEntity.setCeph1(ceph1);
                 autoEntity.setClient(client);
@@ -256,7 +253,7 @@ public class AutoDeployService {
         //从列表中删除
         try {
             for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getName().equals(ipAddress)) {
+                if (list.get(i).getRemoteIPv4().equals(ipAddress)) {
                     list.remove(list.get(i));
                     break;
                 }
@@ -294,17 +291,16 @@ public class AutoDeployService {
         //设置ipv4和ipv6地址
         for (int i = 0; i < ipList.size(); i++) {
             for (int j = 0; j < jsonArray.size(); j++) {
-                if (ipList.get(i).getName().equals(jsonArray.get(j).getName())) {
+                if (ipList.get(i).getRemoteIPv4().equals(jsonArray.get(j).getRemoteIPv4())) {
                     ipList.get(i).setLocalIPv4(jsonArray.get(j).getLocalIPv4());
                     ipList.get(i).setClusterIPv4(jsonArray.get(j).getClusterIPv4());
-                    ipList.get(i).setRemoteIPv4(jsonArray.get(j).getRemoteIPv4());
+                    ipList.get(i).setPublicIPv4(jsonArray.get(j).getPublicIPv4());
                 }
             }
         }
         //保存
         userHolder.getAutoMap().get(token).setAutoEntityArrayList(ipList);
         HashMap<String, Object> returnmap = new HashMap<>();
-//        System.out.println(userHolder.getAutoMap().get(token).getAutoEntityArrayList());
         map.put("isSuccessed", true);
         return new ResponseResult<Map<String, Object>>(returnmap);
     }
@@ -322,9 +318,7 @@ public class AutoDeployService {
         //设置磁盘信息
         for (AutoList.AutoEntity entity : autolist) {
             for (int i = 0; i < allEntity.size(); i++) {
-                if (allEntity.get(i).getName().equals(entity.getName())) {
-//                    System.out.println(allEntity.get(i));
-//                    System.out.println(allEntity.get(i).getDataList());
+                if (allEntity.get(i).getRemoteIPv4().equals(entity.getRemoteIPv4())) {
                     entity.setDataList(allEntity.get(i).getDataList());
                     entity.setCacheList(allEntity.get(i).getCacheList());
                 }
@@ -462,10 +456,10 @@ public class AutoDeployService {
                 ArrayList<String> clients = new ArrayList<>();
                 for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
                     if (entity.getRoleName().equals("ceph1")) {
-                        ceph1.add(entity.getName());
+                        ceph1.add(entity.getRemoteIPv4());
                     }
                     if (entity.getRoleName().contains("client")) {
-                        clients.add(entity.getName());
+                        clients.add(entity.getRemoteIPv4());
                     }
                 }
                 switch (nowStep + 1) {
@@ -710,12 +704,12 @@ public class AutoDeployService {
                 List<Ceph> cephs = new ArrayList<>();
                 ArrayList<String> hosts = new ArrayList<>();
                 for (AutoList.AutoEntity entity : userHolder.getAutoMap().get(token).getAutoEntityArrayList()) {
-                    hosts.add(entity.getName());
+                    hosts.add(entity.getRemoteIPv4());
                     if (entity.getRoleName().equals("ceph1")) {
-                        ceph1ip = entity.getName();
+                        ceph1ip = entity.getRemoteIPv4();
                     }
                     if (entity.getRoleName().contains("ceph")) {
-                        Ceph ceph = new Ceph(entity.getRoleName(), entity.getName());
+                        Ceph ceph = new Ceph(entity.getRoleName(), entity.getRemoteIPv4());
                         cephs.add(ceph);
                     }
                 }
@@ -771,7 +765,7 @@ public class AutoDeployService {
                 dataarray.add(datalist.get(i).getName());
             }
             if (dataarray.size() > 0) {
-                dataDiskList.put(entity.getName(), dataarray);
+                dataDiskList.put(entity.getRemoteIPv4(), dataarray);
             }
         }
         for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
@@ -781,7 +775,7 @@ public class AutoDeployService {
                 cachearray.add(cachelist.get(i).getName());
             }
             if (cachearray.size() > 0) {
-                cacheDiskList.put(entity.getName(), cachearray);
+                cacheDiskList.put(entity.getRemoteIPv4(), cachearray);
             }
         }
         String[] pubMask = autolist.getPubMask().split("\\.");
@@ -823,21 +817,21 @@ public class AutoDeployService {
         ArrayList<String> cephips = new ArrayList<>();
         for (AutoList.AutoEntity entity : autoEntities) {
             if (entity.getRoleName().equals("ceph1")) {
-                ceph1ip.add(entity.getName());
+                ceph1ip.add(entity.getRemoteIPv4());
                 CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true, entity.getLocalIPv4(),
-                        entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
-                        dataDiskList.get(entity.getName()),
-                        cacheDiskList.get(entity.getName()));
+                        entity.getPublicIPv4(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
+                        dataDiskList.get(entity.getRemoteIPv4()),
+                        cacheDiskList.get(entity.getRemoteIPv4()));
                 cephConfs.add(cephConf);
-                cephips.add(entity.getName());
+                cephips.add(entity.getRemoteIPv4());
             } else if (entity.getRoleName().contains("ceph")) {
                 CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
-                        entity.getName(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
-                        dataDiskList.get(entity.getName()),
-                        cacheDiskList.get(entity.getName()));
+                        entity.getPublicIPv4(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
+                        dataDiskList.get(entity.getRemoteIPv4()),
+                        cacheDiskList.get(entity.getRemoteIPv4()));
                 cephConfs.add(cephConf);
                 ++name_num;
-                cephips.add(entity.getName());
+                cephips.add(entity.getRemoteIPv4());
             }
         }
 
@@ -848,9 +842,9 @@ public class AutoDeployService {
         for (AutoList.AutoEntity entity : autoEntities) {
             if (entity.getRoleName().contains("client")) {
                 ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),
-                        entity.getName(), autolist.getPassword());
+                        entity.getPublicIPv4(), autolist.getPassword());
                 clientConfs.add(clientConf);
-                clienthosts.add(entity.getName());
+                clienthosts.add(entity.getRemoteIPv4());
                 ++num;
             }
         }
@@ -1096,9 +1090,9 @@ public class AutoDeployService {
         ArrayList<String> cephips = new ArrayList<>();
         for (AutoList.AutoEntity entity : autolist.getAutoEntityArrayList()) {
             if (entity.getRoleName().equals("ceph1")) {
-                cephips.add(entity.getName());
+                cephips.add(entity.getRemoteIPv4());
             } else if (entity.getRoleName().contains("ceph")) {
-                cephips.add(entity.getName());
+                cephips.add(entity.getRemoteIPv4());
             }
         }
         Map<String, AsyncEntity> entityMap = new HashMap<>(cephips.size());

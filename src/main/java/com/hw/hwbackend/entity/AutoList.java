@@ -26,7 +26,7 @@ public class AutoList {
 
     @Data
     public static class AutoEntity{
-        String name;
+        String remoteIPv4;
 
         boolean ceph;
         boolean client;
@@ -34,7 +34,8 @@ public class AutoList {
         String roleName;
         String localIPv4;
         String clusterIPv4;
-        String remoteIPv4;
+
+        String publicIPv4;
         boolean isConnected;
         boolean isCpu;
         boolean isMemory;
