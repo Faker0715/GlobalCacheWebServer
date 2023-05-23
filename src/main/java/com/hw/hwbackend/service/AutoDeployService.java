@@ -112,10 +112,10 @@ public class AutoDeployService {
         //根据获取的节点状态 设置返回信息
         for (Map.Entry<String, ErrorCodeEntity> entry : entityMap.entrySet()) {
             if (entry.getValue().getErrorCode() == 1) {
-                isCpu = false;
+                isMemory = false;
             }
             if (entry.getValue().getErrorCode() == 2) {
-                isMemory = false;
+                isCpu = false;
             }
             if(entry.getValue().getErrorCode() == 3){
                 isCpu = false;
