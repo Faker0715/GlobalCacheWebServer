@@ -462,7 +462,7 @@ public class AutoDeployService {
                         clients.add(entity.getRemoteIPv4());
                     }
                 }
-                switch (nowStep + 1) {
+                switch (nowStep) {
                     case 1:
                         initDeployConf(token);
                         try {
@@ -818,14 +818,14 @@ public class AutoDeployService {
         for (AutoList.AutoEntity entity : autoEntities) {
             if (entity.getRoleName().equals("ceph1")) {
                 ceph1ip.add(entity.getRemoteIPv4());
-                CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true, entity.getLocalIPv4(),
+                CephConf cephConf = new CephConf(cephname + "1", num++, true, true, true,entity.getRemoteIPv4(), entity.getLocalIPv4(),
                         entity.getPublicIPv4(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
                         dataDiskList.get(entity.getRemoteIPv4()),
                         cacheDiskList.get(entity.getRemoteIPv4()));
                 cephConfs.add(cephConf);
                 cephips.add(entity.getRemoteIPv4());
             } else if (entity.getRoleName().contains("ceph")) {
-                CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false, entity.getLocalIPv4(),
+                CephConf cephConf = new CephConf(cephname + name_num, num++, false, false, false,entity.getRemoteIPv4(), entity.getLocalIPv4(),
                         entity.getPublicIPv4(), entity.getClusterIPv4(), autolist.getPubMask(), autolist.getPassword(),
                         dataDiskList.get(entity.getRemoteIPv4()),
                         cacheDiskList.get(entity.getRemoteIPv4()));
@@ -841,7 +841,7 @@ public class AutoDeployService {
 
         for (AutoList.AutoEntity entity : autoEntities) {
             if (entity.getRoleName().contains("client")) {
-                ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),
+                ClientConf clientConf = new ClientConf(clientname + num, autolist.getPubMask(),entity.getRemoteIPv4(),
                         entity.getPublicIPv4(), autolist.getPassword());
                 clientConfs.add(clientConf);
                 clienthosts.add(entity.getRemoteIPv4());
