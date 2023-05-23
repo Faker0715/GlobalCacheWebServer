@@ -47,6 +47,8 @@ public class UserHolder {
         stateMap.put(4,"客户端依赖包编译");
         stateMap.put(5,"ceph部署");
         stateMap.put(6,"globalcache部署");
+        stateMap.put(7,"globalcache部署完成");
+
 
     }
 
