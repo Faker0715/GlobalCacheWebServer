@@ -112,6 +112,9 @@ public class AutoDeployService {
         }
         //根据获取的节点状态 设置返回信息
         for (Map.Entry<String, ErrorCodeEntity> entry : entityMap.entrySet()) {
+            if(entry.getValue().getErrorCode() != 0){
+                isConnected = false;
+            }
             if (entry.getValue().getErrorCode() == 1) {
                 isCpu = false;
             }
@@ -137,7 +140,7 @@ public class AutoDeployService {
 
 
         String rolename = "";
-        if (isConnected) {
+        if (isConnected && isValid) {
             try {
                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryHostNameInfo(ipAddress).entrySet()) {
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
