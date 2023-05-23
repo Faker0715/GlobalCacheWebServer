@@ -1012,13 +1012,13 @@ public class AutoDeployService {
 
         // 部署Ceph
         try {
-            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeInstallPkgs", "ceph node install packages");
+            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ceph1NodeDeployCeph", "ceph1 node deploy ceph");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
-            System.out.println("安装Ceph失败");
+            System.out.println("部署Ceph失败");
             e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
-            UserHolder.getInstance().getAutopipe().add("安装Ceph失败");
+            UserHolder.getInstance().getAutopipe().add("部署Ceph失败");
 
             return;
         }
