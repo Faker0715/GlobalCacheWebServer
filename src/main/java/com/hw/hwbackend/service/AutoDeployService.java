@@ -419,6 +419,9 @@ public class AutoDeployService {
         String returnstr = "";
         int len = userHolder.getAutopipe().size();
         for (int i = 0; i < len; ++i) {
+            if(userHolder.getAutopipe().peek() == "" || userHolder.getAutopipe().peek() == null ){
+                System.out.println("日志是null");
+            }
             returnstr += userHolder.getAutopipe().poll() + "\n";
         }
         HashMap<String, Object> returnmap = new HashMap<>();
