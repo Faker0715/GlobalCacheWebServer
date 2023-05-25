@@ -696,7 +696,7 @@ public class AutoDeployService {
         userHolder.setRunning(false);
 
         if(userHolder.isReady()){
-            userHolder.setStateNum(userHolder.getStateNum() + 1);
+            userHolder.setStateNum(nowStep + 1);
         }
         returnmap.put("nowName", userHolder.getStateMap().get(userHolder.getStateNum()));
         Runnable finishRunnable = new Runnable() {
