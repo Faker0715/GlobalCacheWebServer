@@ -118,6 +118,7 @@ public class DiskSave {
                 disk.setId(Long.parseLong(id));
                 diskData.saveDisk(disk);
 
+                log.info("disksave-disk: " + disk.toString());
             }
 
         }
