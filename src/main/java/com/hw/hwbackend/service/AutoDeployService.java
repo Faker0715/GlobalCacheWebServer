@@ -1000,6 +1000,19 @@ public class AutoDeployService {
             return;
         }
 
+        // 清理OSD
+        try {
+            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ceph1NodeCleanOsd", "ceph1 node clean osd");
+            printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
+        } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            System.out.println("清理OSD失败");
+            e.printStackTrace();
+            UserHolder.getInstance().setSuccess(false);
+            UserHolder.getInstance().getAutopipe().add("清理OSD失败");
+
+            return;
+        }
+
         // 安装Ceph
         try {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeInstallPkgs", "ceph node install packages");
