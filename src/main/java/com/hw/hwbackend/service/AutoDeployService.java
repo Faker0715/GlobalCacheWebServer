@@ -801,8 +801,17 @@ public class AutoDeployService {
         }
         System.out.println("cluCount: " + cluonesCount);
 
-        autolist.setCnet(autolist.getCnet() + "/" + cluonesCount);
-        autolist.setPnet(autolist.getPnet() + "/" + pubonesCount);
+        // 第一次加/ 后面调用的时候把/后面的Count替换一下
+        if(autolist.getCnet().contains("/")){
+            autolist.setPnet(autolist.getCnet().substring(0, autolist.getPnet().indexOf("/")+1) + cluonesCount);
+        }else{
+            autolist.setCnet(autolist.getCnet() + "/" + cluonesCount);
+        }
+        if(autolist.getPnet().contains("/")){
+            autolist.setCnet(autolist.getPnet().substring(0, autolist.getCnet().indexOf("/")+1) + pubonesCount);
+        }else{
+            autolist.setPnet(autolist.getPnet() + "/" + pubonesCount);
+        }
 
 
         System.out.println(autolist.getPnet());
