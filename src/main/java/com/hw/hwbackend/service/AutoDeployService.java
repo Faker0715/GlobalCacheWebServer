@@ -1192,7 +1192,7 @@ public class AutoDeployService {
                 }
             }
         } catch(Exception e) {
-            InvocationTargetException targetEx = (InvocationTargetException)ex;
+            InvocationTargetException targetEx = (InvocationTargetException)e;
             Throwable throwEx = targetEx .getTargetException();
             throw new GlobalCacheSDKException(throwEx.getMessage());
         }
