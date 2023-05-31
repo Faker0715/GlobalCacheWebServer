@@ -1191,10 +1191,10 @@ public class AutoDeployService {
                     entityMap.put(entry.getKey(), null);
                 }
             }
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            log.info(banner + " failed.");
-            System.out.println("call " + asyncMethodName + " failed!");
-            throw new RuntimeException(e);
+        } catch(Exception e) {
+            InvocationTargetException targetEx = (InvocationTargetException)ex;
+            Throwable throwEx = targetEx .getTargetException();
+            throw new GlobalCacheSDKException(throwEx.getMessage());
         }
 
         log.info(banner + " success.");
