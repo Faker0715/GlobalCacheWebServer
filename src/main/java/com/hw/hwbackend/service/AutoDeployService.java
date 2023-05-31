@@ -638,7 +638,7 @@ public class AutoDeployService {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
                                     UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if (errorCodeEntity.getErrorCode() != 0) {
-                                        flag = false;
+                                        bserver = false;
                                     }
                                 } else {
                                     bserver = false;
@@ -653,7 +653,7 @@ public class AutoDeployService {
                                     ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
                                     UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
                                     if (errorCodeEntity.getErrorCode() != 0) {
-                                        flag = false;
+                                        bclient = false;
                                     }
                                 } else {
                                     bclient = false;
@@ -678,10 +678,34 @@ public class AutoDeployService {
                         break;
                     case 7:
                         gcacheInit(token);
-                        userHolder.setReady(true);
-                        System.out.println("globalcache服务器安装成功");
-                        UserHolder.getInstance().getAutopipe().add("globalcache服务器安装成功");
-                        UserHolder.getInstance().setSuccess(true);
+                        try {
+                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkGlobalCacheRunning().entrySet()) {
+                                if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                    if (errorCodeEntity.getErrorCode() != 0) {
+                                        flag = false;
+                                    }
+                                } else {
+                                    flag = false;
+                                    log.info("checkGlobalCacheRunning failed.");
+                                    UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
+                                    UserHolder.getInstance().setSuccess(false);
+                                }
+                            }
+                        } catch (GlobalCacheSDKException e) {
+                            log.info("checkGlobalCacheRunning failed.");
+                            System.out.println("checkGlobalCacheRunning 失败");
+                            flag = false;
+                            e.printStackTrace();
+                            UserHolder.getInstance().setSuccess(false);
+                            UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
+                        }
+                        if (flag) {
+                            userHolder.setReady(true);
+                        }
+                        break;
+
                 }
                 userHolder.setRunning(false);
             }
