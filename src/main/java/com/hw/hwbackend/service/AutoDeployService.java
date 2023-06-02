@@ -703,6 +703,7 @@ public class AutoDeployService {
                         }
                         if (flag) {
                             userHolder.setReady(true);
+                            UserHolder.getInstance().setSuccess(true);
                         }
                         break;
 
