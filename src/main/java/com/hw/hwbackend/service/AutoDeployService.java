@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static jodd.util.ThreadUtil.sleep;
+
 //自动化部署的业务类
 @Service
 public class AutoDeployService {
@@ -678,6 +680,8 @@ public class AutoDeployService {
                         break;
                     case 7:
                         gcacheInit(token);
+                        UserHolder.getInstance().getAutopipe().add("Global Cache 初始化中...");
+                        sleep(1000 * 30); // wait 30s
                         try {
                             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkGlobalCacheRunning().entrySet()) {
                                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
