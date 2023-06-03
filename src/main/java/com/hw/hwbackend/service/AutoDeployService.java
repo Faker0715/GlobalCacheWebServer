@@ -1048,13 +1048,13 @@ public class AutoDeployService {
 
         // 安装Ceph
         try {
-            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeInstallPkgs", "ceph node install packages");
+            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeDiskPartition", "ceph node disk partition");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
-            System.out.println("安装Ceph失败");
+            System.out.println("格式化磁盘失败");
             e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
-            UserHolder.getInstance().getAutopipe().add("安装Ceph失败");
+            UserHolder.getInstance().getAutopipe().add("格式化磁盘失败");
 
             return;
         }
