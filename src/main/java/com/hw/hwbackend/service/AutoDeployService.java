@@ -682,30 +682,45 @@ public class AutoDeployService {
                         gcacheInit(token);
                         UserHolder.getInstance().getAutopipe().add("Global Cache 初始化中...");
                         sleep(1000 * 30); // wait 30s
-                        try {
-                            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkGlobalCacheRunning().entrySet()) {
-                                if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                                    ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
-                                    UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
-                                    if (errorCodeEntity.getErrorCode() != 0) {
-                                        flag = false;
+                        int times = 5;
+                        boolean isCacheRunning = true;
+                        for(int i = 0;i < times;++i){
+                            try {
+                                for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkGlobalCacheRunning().entrySet()) {
+                                    if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                        ErrorCodeEntity errorCodeEntity = (ErrorCodeEntity) entry.getValue().getData();
+                                        UserHolder.getInstance().getAutopipe().add(errorCodeEntity.getMessage());
+                                        if (errorCodeEntity.getErrorCode() != 0) {
+                                            isCacheRunning = true;
+                                        }else{
+                                            isCacheRunning = false;
+                                        }
+                                    } else {
+                                        isCacheRunning = true;
+                                        log.info("checkGlobalCacheRunning failed.");
+                                        UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
+                                        UserHolder.getInstance().setSuccess(false);
                                     }
-                                } else {
-                                    flag = false;
-                                    log.info("checkGlobalCacheRunning failed.");
-                                    UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
-                                    UserHolder.getInstance().setSuccess(false);
                                 }
+                            } catch (GlobalCacheSDKException e) {
+                                e.printStackTrace(System.out);
+                                System.out.println(e);
+                                log.info("checkGlobalCacheRunning failed.");
+                                System.out.println("checkGlobalCacheRunning 失败");
+                                isCacheRunning = true;
+                                UserHolder.getInstance().setSuccess(false);
+                                UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
                             }
-                        } catch (GlobalCacheSDKException e) {
-                            log.info("checkGlobalCacheRunning failed.");
-                            System.out.println("checkGlobalCacheRunning 失败");
-                            flag = false;
-                            e.printStackTrace();
-                            UserHolder.getInstance().setSuccess(false);
-                            UserHolder.getInstance().getAutopipe().add("checkGlobalCacheRunning 失败");
+                            if(isCacheRunning == false){
+                                flag = true;
+                                break;
+                            }else{
+                                flag = false;
+                            }
+                            sleep(1000 * 30); // wait 30s
                         }
                         if (flag) {
+                            userHolder.setSuccess(true);
                             userHolder.setReady(true);
                         }
                         break;
@@ -765,6 +780,8 @@ public class AutoDeployService {
         };
         Thread finishThread = new Thread(finishRunnable);
         if (userHolder.isSuccess()) {
+            System.out.println("wait 60s...");
+            UserHolder.getInstance().getAutopipe().add("正在收集数据, 请等待...");
             finishThread.start();
         }
         return new ResponseResult<Map<String, Object>>(returnmap);
@@ -897,7 +914,7 @@ public class AutoDeployService {
             GlobalCacheSDK.initClusterSettings(cephConfs, clientConfs, clusterConf);
             System.out.println("初始化完成------------------------");
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
             UserHolder.getInstance().getAutopipe().add("配置文件初始化失败");
             UserHolder.getInstance().setSuccess(false);
             System.out.println("配置文件初始化失败");
@@ -917,8 +934,8 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("compileNodeConfEnv", "compile node configure envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
             System.out.println("服务端节点配置编译环境失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("服务端节点配置编译环境失败");
 
@@ -930,8 +947,8 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("compileNodeBuildPkgs", "compile node build packages");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
             System.out.println("编译软件失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("编译软件失败");
 
@@ -950,8 +967,8 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("compileNodeDistributePkgs", "compile node distribute packages");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
             System.out.println("分发软件包失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("分发软件包失败");
 
@@ -970,8 +987,8 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("clientNodeConfCompileEnv", "client node configure compile envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
             System.out.println("客户端节点配置编译环境失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("客户端节点配置编译环境失败");
 
@@ -983,8 +1000,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("clientNodeBuildPkgs", "client node build packages");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("编译软件失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("编译软件失败");
 
@@ -1003,8 +1021,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("allNodeCephConfEnv", "all node configure ceph envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("配置Ceph环境失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("配置Ceph环境失败");
 
@@ -1016,8 +1035,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ntpServerNodeConfEnv", "ntp server node configure envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("配置ntp服务端失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("配置ntp服务端失败");
 
@@ -1029,8 +1049,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ntpClientNodeConfEnv", "ntp client node configure envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("配置ntp客户端失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("配置ntp客户端失败");
 
@@ -1042,8 +1063,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ceph1NodeCleanOsd", "ceph1 node clean osd");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("清理OSD失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("清理OSD失败");
 
@@ -1055,11 +1077,11 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeDiskPartition", "ceph node disk partition");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("格式化磁盘失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("格式化磁盘失败");
-
             return;
         }
 
@@ -1068,11 +1090,11 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ceph1NodeDeployCeph", "ceph1 node deploy ceph");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("部署Ceph失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("部署Ceph失败");
-
             return;
         }
     }
@@ -1088,8 +1110,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("serverNodeConfEnv", "server node configure globalcache envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("配置服务端gcache环境失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("配置服务端gcache环境失败");
 
@@ -1101,8 +1124,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("clientNodeConfEnv", "client node configure globalcache envrionment");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("配置客户端gcache环境失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("配置客户端gcache环境失败");
 
@@ -1114,8 +1138,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("serverNodeInstallPkgs", "server node install globalcache package");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("服务端安装gcache失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("服务端安装gcache失败");
 
@@ -1127,8 +1152,9 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("clientNodeInstallPkgs", "client node install globalcache package");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println(e);
             System.out.println("客户端安装gcache失败");
-            e.printStackTrace();
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("客户端安装gcache失败");
 
@@ -1162,7 +1188,8 @@ public class AutoDeployService {
                 }
             }
         } catch (GlobalCacheSDKException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
+            System.out.println(e);
             log.info("gcServiceControl failed.");
             UserHolder.getInstance().getAutopipe().add("初始化globalcache失败");
             UserHolder.getInstance().setSuccess(false);
