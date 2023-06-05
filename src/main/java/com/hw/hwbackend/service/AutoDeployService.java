@@ -1146,8 +1146,8 @@ public class AutoDeployService {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("ceph1NodeDeployCeph", "ceph1 node deploy ceph");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
         } catch (GlobalCacheSDKException | AsyncThreadException e) {
-            System.out.println("部署Ceph失败");
             e.printStackTrace();
+            System.out.println("部署Ceph失败");
             UserHolder.getInstance().setSuccess(false);
             UserHolder.getInstance().getAutopipe().add("部署Ceph失败");
 
