@@ -1280,7 +1280,9 @@ public class AutoDeployService {
                 AsyncEntity entity = entry.getValue();
                 String line = entity.readLine();
                 if (line == null) {
+                    System.out.println("start wait finish");
                     entity.waitFinish(); // 此时线程已经读取完毕，关闭缓冲区和Channel
+                    System.out.println("end wait finish");
                     countDown -= 1;
                     continue;
                 }
