@@ -687,6 +687,8 @@ public class AutoDeployService {
                         int times = 5;
                         boolean isCacheRunning = true;
                         for(int i = 0;i < times;++i){
+                            UserHolder.getInstance().getAutopipe().add("正在重新尝试: " + (i+1) + "/" + times + "...");
+                            flag = false;
                             try {
                                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.checkGlobalCacheRunning().entrySet()) {
                                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
@@ -716,9 +718,6 @@ public class AutoDeployService {
                             if(isCacheRunning == false){
                                 flag = true;
                                 break;
-                            }else{
-                                UserHolder.getInstance().getAutopipe().add("正在重新尝试: " + (i+1) + "/" + times + "...");
-                                flag = false;
                             }
                             sleep(1000 * 120); // wait 120s
                         }
