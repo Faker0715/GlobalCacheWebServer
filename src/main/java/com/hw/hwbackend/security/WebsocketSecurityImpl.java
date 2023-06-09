@@ -30,6 +30,7 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
 //        System.out.println(socketRequest.getUrl());
         // 如果不通过
         if(!isPass){
+            System.out.println("not pass!");
             // 先给前端发一条消息
             ctx.channel().writeAndFlush(new TextWebSocketFrame(JsonUtils.objToJson(new SocketResponse(HttpResponseStatus.UNAUTHORIZED.code(), "授权不通过！"))));
             // 如果存在连接 那么主动删除对象
