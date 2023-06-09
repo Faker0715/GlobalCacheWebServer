@@ -684,7 +684,6 @@ public class AutoDeployService {
                     case 7:
                         gcacheInit(token);
                         UserHolder.getInstance().getAutopipe().add("Global Cache 初始化中...");
-                        sleep(1000 * 30); // wait 30s
                         int times = 5;
                         boolean isCacheRunning = true;
                         for(int i = 0;i < times;++i){
@@ -721,7 +720,7 @@ public class AutoDeployService {
                                 UserHolder.getInstance().getAutopipe().add("正在重新尝试: " + (i+1) + "/" + times + "...");
                                 flag = false;
                             }
-                            sleep(1000 * 30); // wait 30s
+                            sleep(1000 * 120); // wait 120s
                         }
                         if (flag) {
                             userHolder.setSuccess(true);
