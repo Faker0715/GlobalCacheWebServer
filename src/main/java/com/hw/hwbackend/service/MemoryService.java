@@ -42,9 +42,10 @@ public class MemoryService {
         //将数据封装成json
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url","getMemoryData");
+        WebSocketHandlerListenterImpl webSocketHandlerListenter = WebSocketHandlerListenterImpl.getInstance();
         //根据websoket连接 判断
-        for (Map.Entry<String, Channel> entry : WebSocketHandlerListenterImpl.chanelIdMap.entrySet()) {
-            WebsocketDTO wsdto = WebSocketHandlerListenterImpl.WebsocketMap.get(entry.getKey());
+        for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
+            WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
             if(wsdto.getUrl().equals("/getMemoryData") && wsdto.getParams().getNodeId() != -1){
                 jsonObject.put("params", JSONObject.toJSON(getMemoryData(wsdto.getParams().getNodeId())));
                 jsonObject.put("token",wsdto.getParams().getToken());

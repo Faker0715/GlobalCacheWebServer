@@ -5,8 +5,10 @@ import com.hw.hwbackend.dto.WebsocketDTO;
 import com.hw.hwbackend.util.UserHolder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.concurrent.ConcurrentHashMap;
+import lombok.Data;
 
+import java.util.concurrent.ConcurrentHashMap;
+@Data
 public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter {
 
     private static WebSocketHandlerListenterImpl webSocketHandlerListenter;
@@ -19,9 +21,9 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
     }
 
     // socketid -> channel
-    public static ConcurrentHashMap<String, Channel> chanelIdMap = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, Channel> chanelIdMap = new ConcurrentHashMap<>();
     // socketid -> websocketdto
-    public static ConcurrentHashMap<String, WebsocketDTO> WebsocketMap = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, WebsocketDTO> WebsocketMap = new ConcurrentHashMap<>();
 
     @Override
     public int level() {

@@ -46,9 +46,10 @@ public class CpuCalenderService{
             jsonObject.put("params", JSONObject.toJSON(cpuCalender.getCpuNodeArrayList()));
         else
             jsonObject.put("params","");
+        WebSocketHandlerListenterImpl webSocketHandlerListenter = WebSocketHandlerListenterImpl.getInstance();
         //根据websoket连接 判断
-        for (Map.Entry<String, Channel> entry : WebSocketHandlerListenterImpl.chanelIdMap.entrySet()) {
-            WebsocketDTO wsdto = WebSocketHandlerListenterImpl.WebsocketMap.get(entry.getKey());
+        for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
+            WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
             if(wsdto.getUrl().equals("/getCpuCalender")) {
                 jsonObject.put("token",wsdto.getParams().getToken());
                 log.info("cpucalenderservice-websocket: " + jsonObject.toJSONString());
