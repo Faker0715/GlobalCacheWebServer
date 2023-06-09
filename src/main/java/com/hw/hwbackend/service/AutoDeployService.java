@@ -718,7 +718,7 @@ public class AutoDeployService {
                                 flag = true;
                                 break;
                             }else{
-                                UserHolder.getInstance().getAutopipe().add("正在重新尝试: " + i+1 + "/" + times + "...");
+                                UserHolder.getInstance().getAutopipe().add("正在重新尝试: " + (i+1) + "/" + times + "...");
                                 flag = false;
                             }
                             sleep(1000 * 30); // wait 30s
