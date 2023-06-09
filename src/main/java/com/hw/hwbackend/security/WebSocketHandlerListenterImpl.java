@@ -2,11 +2,22 @@ package com.hw.hwbackend.security;
 
 import com.github.lazyboyl.websocket.listenter.WebSocketHandlerListenter;
 import com.hw.hwbackend.dto.WebsocketDTO;
+import com.hw.hwbackend.util.UserHolder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter {
+
+    private static WebSocketHandlerListenterImpl webSocketHandlerListenter;
+
+    public static WebSocketHandlerListenterImpl getInstance() {
+        if (webSocketHandlerListenter== null) {
+            webSocketHandlerListenter = new WebSocketHandlerListenterImpl();
+        }
+        return webSocketHandlerListenter;
+    }
+
     // socketid -> channel
     public static ConcurrentHashMap<String, Channel> chanelIdMap = new ConcurrentHashMap<>();
     // socketid -> websocketdto
