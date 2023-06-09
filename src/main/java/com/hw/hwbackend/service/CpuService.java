@@ -48,8 +48,8 @@ public class CpuService {
         //根据websoket连接 判断
         for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
             WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
-            System.out.println(wsdto.getParams());
             System.out.println(wsdto.getUrl());
+            System.out.println(wsdto.getParams());
             if (wsdto.getUrl().equals("/getCpuData") && wsdto.getParams().getNodeId() != -1) {
                 System.out.println("cpu will send: " + jsonObject);
                 jsonObject.put("params", getCpuDataByNodeId(wsdto.getParams().getNodeId()));
