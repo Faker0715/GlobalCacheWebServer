@@ -52,6 +52,9 @@ public class DiskService {
         //根据websoket连接 判断
         for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
             WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
+            if(wsdto == null){
+                continue;
+            }
             if(wsdto.getUrl().equals("/getDiskData") && wsdto.getParams().getNodeId() != -1){
                 jsonObject.put("params", JSONObject.toJSON(getDiskData(wsdto.getParams().getNodeId())));
                 jsonObject.put("token",wsdto.getParams().getToken());

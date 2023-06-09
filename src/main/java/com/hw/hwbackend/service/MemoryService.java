@@ -46,6 +46,9 @@ public class MemoryService {
         //根据websoket连接 判断
         for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
             WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
+            if(wsdto == null){
+                continue;
+            }
             if(wsdto.getUrl().equals("/getMemoryData") && wsdto.getParams().getNodeId() != -1){
                 jsonObject.put("params", JSONObject.toJSON(getMemoryData(wsdto.getParams().getNodeId())));
                 jsonObject.put("token",wsdto.getParams().getToken());
