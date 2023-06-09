@@ -25,7 +25,7 @@ public class DiskController {
     @GetMapping("/getDiskData")
     @WebSocketRequestMapping("/getDiskData")
     public void getDiskData(@WebSocketRequestParam(name = "nodeId") int nodeId) throws IOException {
-//        abstractService.getDiskData();
+        abstractService.getDiskData();
     }
 
 }

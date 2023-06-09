@@ -21,7 +21,7 @@ public class MemoryController {
     @GetMapping("/getMemoryData")
     @WebSocketRequestMapping("/getMemoryData")
     public void getMemoryData(@WebSocketRequestParam(name = "nodeId") int nodeId) throws IOException {
-//        abstractService.getMemoryData();
+        abstractService.getMemoryData();
     }
 
 }

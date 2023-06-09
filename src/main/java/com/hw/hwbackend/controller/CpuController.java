@@ -19,7 +19,7 @@ public class CpuController {
     @GetMapping("/getCpuData")
     @WebSocketRequestMapping("/getCpuData")
     public void getCpuData(@WebSocketRequestParam(name = "nodeId") int nodeId) throws IOException {
-//        abstractService.getCpuData();
+        abstractService.getCpuData();
     }
 
 }

@@ -27,7 +27,7 @@ public class NetworkController {
     @GetMapping("/getNetData")
     @WebSocketRequestMapping("/getNetData")
     public void getNetData(@WebSocketRequestParam(name = "nodeId") int nodeId) throws IOException {
-//        abstractService.getNetData();
+        abstractService.getNetData();
     }
 
 }

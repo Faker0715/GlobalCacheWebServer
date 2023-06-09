@@ -19,7 +19,7 @@ public class CpuCalenderController {
     @GetMapping("/getCpuCalender")
     @WebSocketRequestMapping("/getCpuCalender")
     public void getCpuCalender() throws IOException {
-//       abstractService.getCpuCalender();
+       abstractService.getCpuCalender();
     }
 
 }
