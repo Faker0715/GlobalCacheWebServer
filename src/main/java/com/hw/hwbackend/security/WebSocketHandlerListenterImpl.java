@@ -38,14 +38,14 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("current end channel: " + ctx.channel().id().asLongText());
 //        webSocketCloseService.removeChannel(ctx.channel().id().asLongText());
-        webSocketHandlerListenter.WebsocketMap.remove(ctx.channel().id().asLongText());
-        webSocketHandlerListenter.chanelIdMap.remove(ctx.channel().id().asLongText());
+        WebSocketHandlerListenterImpl.getInstance().WebsocketMap.remove(ctx.channel().id().asLongText());
+        WebSocketHandlerListenterImpl.getInstance().chanelIdMap.remove(ctx.channel().id().asLongText());
     }
 
     @Override
     public void handleShake(ChannelHandlerContext ctx) {
         System.out.println("current start channel：" + ctx.channel().id().asLongText());
-        webSocketHandlerListenter.chanelIdMap.put(ctx.channel().id().asLongText(),ctx.channel());
-        System.out.println("websocketchannelidmap: " + webSocketHandlerListenter + " " + chanelIdMap.size());
+        WebSocketHandlerListenterImpl.getInstance().chanelIdMap.put(ctx.channel().id().asLongText(), ctx.channel());
+        System.out.println("websocketchannelidmap: " + webSocketHandlerListenter + " " + webSocketHandlerListenter.chanelIdMap.size());
     }
 }
