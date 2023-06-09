@@ -26,14 +26,16 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
     public Boolean authentication(ChannelHandlerContext ctx, SocketRequest socketRequest) {
         // 先判断url是否是websocket的url
         Boolean isPass = authService.authUrl(socketRequest.getUrl());
+        WebSocketHandlerListenterImpl webSocketHandlerListenterImpl = WebSocketHandlerListenterImpl.getInstance();
 //        System.out.println(socketRequest.getUrl());
         // 如果不通过
         if(!isPass){
             // 先给前端发一条消息
             ctx.channel().writeAndFlush(new TextWebSocketFrame(JsonUtils.objToJson(new SocketResponse(HttpResponseStatus.UNAUTHORIZED.code(), "授权不通过！"))));
             // 如果存在连接 那么主动删除对象
-            if(WebSocketHandlerListenterImpl.WebsocketMap.contains(ctx.channel().id().asLongText())){
-               WebSocketHandlerListenterImpl.WebsocketMap.remove(ctx.channel().id().asLongText());
+
+            if(webSocketHandlerListenterImpl.WebsocketMap.contains(ctx.channel().id().asLongText())){
+               webSocketHandlerListenterImpl.WebsocketMap.remove(ctx.channel().id().asLongText());
             }
             // 主动断开连接
             ctx.channel().close();
@@ -53,7 +55,7 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
                 params.setToken(String.valueOf(socketRequest.getParams().get("token")));
             }
             websocketDTO.setParams(params);
-            WebSocketHandlerListenterImpl.WebsocketMap.put(ctx.channel().id().asLongText(),websocketDTO);
+            webSocketHandlerListenterImpl.WebsocketMap.put(ctx.channel().id().asLongText(),websocketDTO);
         }
         return isPass;
     }
