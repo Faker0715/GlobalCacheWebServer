@@ -36,7 +36,7 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("当前关闭的通道的id是：" + ctx.channel().id().asLongText());
+        System.out.println("current end channel: " + ctx.channel().id().asLongText());
 //        webSocketCloseService.removeChannel(ctx.channel().id().asLongText());
         webSocketHandlerListenter.WebsocketMap.remove(ctx.channel().id().asLongText());
         webSocketHandlerListenter.chanelIdMap.remove(ctx.channel().id().asLongText());
@@ -44,8 +44,8 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
 
     @Override
     public void handleShake(ChannelHandlerContext ctx) {
-        System.out.println("当前开启的通道的id是：" + ctx.channel().id().asLongText());
+        System.out.println("current start channel：" + ctx.channel().id().asLongText());
         webSocketHandlerListenter.chanelIdMap.put(ctx.channel().id().asLongText(),ctx.channel());
-        System.out.println("websocket: " + webSocketHandlerListenter + " " + chanelIdMap.size());
+        System.out.println("websocketchannelidmap: " + webSocketHandlerListenter + " " + chanelIdMap.size());
     }
 }
