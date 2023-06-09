@@ -49,6 +49,7 @@ public class CpuCalenderService{
         WebSocketHandlerListenterImpl webSocketHandlerListenter = WebSocketHandlerListenterImpl.getInstance();
 
 
+        System.out.println("cpucanlender: " + webSocketHandlerListenter);
         System.out.println("cpucanlender: " + webSocketHandlerListenter.chanelIdMap);
         //根据websoket连接 判断
         for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {

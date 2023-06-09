@@ -46,5 +46,6 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
     public void handleShake(ChannelHandlerContext ctx) {
         System.out.println("当前开启的通道的id是：" + ctx.channel().id().asLongText());
         webSocketHandlerListenter.chanelIdMap.put(ctx.channel().id().asLongText(),ctx.channel());
+        System.out.println("websocket: " + webSocketHandlerListenter + " " + chanelIdMap.size());
     }
 }
