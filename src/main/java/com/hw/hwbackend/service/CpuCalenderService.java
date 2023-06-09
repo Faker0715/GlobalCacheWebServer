@@ -47,6 +47,9 @@ public class CpuCalenderService{
         else
             jsonObject.put("params","");
         WebSocketHandlerListenterImpl webSocketHandlerListenter = WebSocketHandlerListenterImpl.getInstance();
+
+
+        System.out.println("cpucanlender: " + webSocketHandlerListenter.chanelIdMap);
         //根据websoket连接 判断
         for (Map.Entry<String, Channel> entry : webSocketHandlerListenter.chanelIdMap.entrySet()) {
             WebsocketDTO wsdto = webSocketHandlerListenter.WebsocketMap.get(entry.getKey());
