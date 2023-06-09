@@ -8,7 +8,6 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.Data;
 
 import java.util.concurrent.ConcurrentHashMap;
-@Data
 public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter {
 
     private static WebSocketHandlerListenterImpl webSocketHandlerListenter;
@@ -37,7 +36,7 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-//        System.out.println("当前关闭的通道的id是：" + ctx.channel().id().asLongText());
+        System.out.println("当前关闭的通道的id是：" + ctx.channel().id().asLongText());
 //        webSocketCloseService.removeChannel(ctx.channel().id().asLongText());
         WebsocketMap.remove(ctx.channel().id().asLongText());
         chanelIdMap.remove(ctx.channel().id().asLongText());
@@ -45,7 +44,7 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
 
     @Override
     public void handleShake(ChannelHandlerContext ctx) {
-//        System.out.println("当前开启的通道的id是：" + ctx.channel().id().asLongText());
+        System.out.println("当前开启的通道的id是：" + ctx.channel().id().asLongText());
         chanelIdMap.put(ctx.channel().id().asLongText(),ctx.channel());
     }
 }
