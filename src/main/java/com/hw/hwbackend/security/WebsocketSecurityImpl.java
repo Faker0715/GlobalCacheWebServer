@@ -11,7 +11,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.hw.hwbackend.security.WebSocketHandlerListenterImpl;
 public class WebsocketSecurityImpl implements WebsocketSecurity {
 
     @Autowired
@@ -57,6 +56,7 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
             }
             websocketDTO.setParams(params);
             webSocketHandlerListenterImpl.WebsocketMap.put(ctx.channel().id().asLongText(),websocketDTO);
+            System.out.println("current websocketmap: " + webSocketHandlerListenterImpl.WebsocketMap);
         }
         return isPass;
     }
