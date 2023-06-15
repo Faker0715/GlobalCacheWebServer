@@ -45,7 +45,7 @@ public class LoginServiceImpl implements LoginServcie {
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         //如果认证没通过，给出对应的提示
         if (Objects.isNull(authenticate)) {
-            return new ResponseResult(false, "", 1,"登录成功");
+            return new ResponseResult(false, "", 1,"用户名或密码错误");
         }
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
