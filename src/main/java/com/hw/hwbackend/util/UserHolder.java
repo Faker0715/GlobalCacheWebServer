@@ -42,13 +42,13 @@ public class UserHolder {
         urlarray.add("/getMemoryData");
 
         stateMap.put(1,"生成集群部署配置文件");
-//        stateMap.put(2,"服务端依赖包编译");
-//        stateMap.put(3,"分发依赖包");
-//        stateMap.put(4,"客户端依赖包编译");
-//        stateMap.put(5,"ceph部署");
-        stateMap.put(2,"globalcache部署");
-        stateMap.put(3,"globalcache初始化");
-        stateMap.put(4,"globalcache部署完成");
+        stateMap.put(2,"服务端依赖包编译");
+        stateMap.put(3,"分发依赖包");
+        stateMap.put(4,"客户端依赖包编译");
+        stateMap.put(5,"ceph部署");
+        stateMap.put(6,"globalcache部署");
+        stateMap.put(7,"globalcache初始化");
+        stateMap.put(8,"globalcache部署完成");
 
 
     }

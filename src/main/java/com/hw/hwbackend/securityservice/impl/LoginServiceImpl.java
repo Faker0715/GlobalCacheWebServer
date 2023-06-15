@@ -45,7 +45,7 @@ public class LoginServiceImpl implements LoginServcie {
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         //如果认证没通过，给出对应的提示
         if (Objects.isNull(authenticate)) {
-            return new ResponseResult(false);
+            return new ResponseResult(false, "", 1,"登录成功");
         }
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
@@ -68,7 +68,7 @@ public class LoginServiceImpl implements LoginServcie {
 //        System.out.println("issuper: " + isSpuer);
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.addAuto(token, new AutoList());
-        return new ResponseResult(true, map, isSpuer,"登陆成功");
+        return new ResponseResult(true, map, isSpuer,"登录成功");
     }
 
     @Override
