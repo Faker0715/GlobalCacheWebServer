@@ -13,6 +13,7 @@ import io.jsonwebtoken.Claims;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.ZoneId;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class UserInterceptor implements HandlerInterceptor {
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     public UserInterceptor(StringRedisTemplate stringRedisTemplate) {
