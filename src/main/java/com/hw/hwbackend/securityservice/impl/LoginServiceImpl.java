@@ -43,9 +43,12 @@ public class LoginServiceImpl implements LoginServcie {
         //AuthenticationManager authenticate进行用户认证
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        System.out.println("auth end!");
+
+        Map<String, String> map = new HashMap<>();
         //如果认证没通过，给出对应的提示
         if (Objects.isNull(authenticate)) {
-            return new ResponseResult(false, "", 1,"用户名或密码错误");
+            return new ResponseResult(false, map, 1,"用户名或密码错误");
         }
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
@@ -60,7 +63,6 @@ public class LoginServiceImpl implements LoginServcie {
         }
 
         loginUser.setToken(token);
-        Map<String, String> map = new HashMap<>();
         map.put("token", token);
         loginUser.setTime(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
         stringRedisTemplate.opsForValue().set("jwt:" + username, JSONUtil.toJsonStr(loginUser), 30 * 60, TimeUnit.SECONDS);
