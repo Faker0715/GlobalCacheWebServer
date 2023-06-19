@@ -26,8 +26,10 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         String token = request.getHeader("token");
         if (StrUtil.isBlank(token)) {
+            System.out.println("no token");
             return true;
         }
+        System.out.println("has token");
         String userid = "";
         try {
             Claims claims = JwtUtil.parseJWT(token);
