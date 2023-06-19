@@ -40,14 +40,17 @@ public class UserInterceptor implements HandlerInterceptor {
             Claims claims = JwtUtil.parseJWT(token);
             userid = claims.getSubject();
         } catch (Exception e) {
+            System.out.println("token invalid");
             e.printStackTrace();
             throw new RuntimeException("token非法");
         }
+        System.out.println("userid : " + userid);
         // 2.基于TOKEN获取redis中的用户
         String key  =  "jwt:" + userid;
         LoginUser loginUser =  JSON.parseObject(stringRedisTemplate.opsForValue().get("jwt:"+userid),LoginUser.class);
         // 3.判断用户是否存在
         if (loginUser == null) {
+            System.out.println("user null");
             return true;
         }
         // 5.将查询到的hash数据转为UserDTO
@@ -55,7 +58,6 @@ public class UserInterceptor implements HandlerInterceptor {
         // 6.存在，保存用户信息到 ThreadLocal
         UserContext.setCurrentUser(loginUser.getUser());
         // 设置刷新时间
-        loginUser.setTime(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
         stringRedisTemplate.opsForValue().set("jwt:" + loginUser.getUser().getUserName(), JSONUtil.toJsonStr(loginUser), 30 * 60, TimeUnit.SECONDS);
         // 7.刷新token有效期
         stringRedisTemplate.expire(key, 30*60, TimeUnit.MINUTES);
