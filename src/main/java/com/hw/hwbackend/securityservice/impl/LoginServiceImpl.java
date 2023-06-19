@@ -41,6 +41,8 @@ public class LoginServiceImpl implements LoginServcie {
     @Override
     public ResponseResult login(User user) {
         //AuthenticationManager authenticate进行用户认证
+
+        System.out.println("auth start!");
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         System.out.println("auth end!");
