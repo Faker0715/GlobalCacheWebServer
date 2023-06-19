@@ -33,6 +33,8 @@ public class UserInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("token");
         if (StrUtil.isBlank(token)) {
+
+            System.out.println("user no token");
             return true;
         }
         String userid = "";
