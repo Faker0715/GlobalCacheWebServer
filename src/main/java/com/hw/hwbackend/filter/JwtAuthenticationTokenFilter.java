@@ -43,6 +43,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             Claims claims = JwtUtil.parseJWT(token);
             userid = claims.getSubject();
         } catch (Exception e) {
+            System.out.println("error token: " + token);
             e.printStackTrace();
             throw new RuntimeException("token过期或者非法");
         }
@@ -56,9 +57,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
         //存入SecurityContextHolder
         //TODO 获取权限信息封装到Authentication中
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//        UsernamePasswordAuthenticationToken authenticationToken =
+//                new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+//        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         //放行
         filterChain.doFilter(request, response);
     }
