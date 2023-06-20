@@ -62,20 +62,20 @@ public class LoginServiceImpl implements LoginServcie {
         queryWrapper.eq(User::getUserName,user.getUserName());
 
 
-        LoginUser loginUser = regMapper.getUserbyName(user.getUserName());
+        User user1 = regMapper.getUserbyName(user.getUserName());
 //        User user1 = UserMapper.selectOne(queryWrapper);
-        System.out.println("lalala"+loginUser);
+        System.out.println("lalala"+user1);
 
 
         Map<String, String> map = new HashMap<>();
         map.put("token","");
         //如果没有查询到用户就抛出异常
-        if(Objects.isNull(loginUser)){
+        if(Objects.isNull(user1)){
             System.out.println("kong");
             //throw new RuntimeException("用户名或者密码错误");
             return new ResponseResult(false,map,1,"用户名或密码错误");
         }
-        if(!passwordEncoder.matches(user.getPassword(), loginUser.getPassword())) {
+        if(!passwordEncoder.matches(user.getPassword(), user1.getPassword())) {
             return new ResponseResult(false,map,1,"用户名或密码错误");
         }
 
@@ -84,7 +84,7 @@ public class LoginServiceImpl implements LoginServcie {
 
         System.out.println("auth end!");
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
-//        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String username = loginUser.getUser().getUserName().toString();
         LoginUser redisUser = JSON.parseObject(stringRedisTemplate.opsForValue().get("jwt:" + username), LoginUser.class);
         String token = "";
