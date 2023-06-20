@@ -3,6 +3,7 @@ package com.hw.hwbackend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hw.hwbackend.entity.GlobalCacheUser;
+import com.hw.hwbackend.entity.LoginUser;
 import com.hw.hwbackend.entity.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -34,7 +35,8 @@ public interface RegMapper extends BaseMapper<User> {
 
     @Select("select ceph1 from hwlogin.finish where is_finished=1")
     public String getIp();
-
+    @Select("select * from hwlogin.sys_user where user_name = #{username} and password = #{password}")
+    public LoginUser getUser(String username,String password);
 
     @Select("select * from hwlogin.globalcacheuser")
     public List<GlobalCacheUser> getuser();

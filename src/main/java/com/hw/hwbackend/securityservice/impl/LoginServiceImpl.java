@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,6 +33,8 @@ public class LoginServiceImpl implements LoginServcie {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
 
@@ -43,17 +46,25 @@ public class LoginServiceImpl implements LoginServcie {
         //AuthenticationManager authenticate进行用户认证
 
         System.out.println("auth start!");
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
-        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+
+        String encode = passwordEncoder.encode(user.getPassword());
+
+//        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
+//        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+
+        LoginUser loginUser = regMapper.getUser(user.getUserName(), encode);
         System.out.println("auth end!");
 
         Map<String, String> map = new HashMap<>();
+        System.out.println(loginUser);
         //如果认证没通过，给出对应的提示
-        if (Objects.isNull(authenticate)) {
+        if (loginUser == null){
+            System.out.println("password error!");
             return new ResponseResult(false, map, 1,"用户名或密码错误");
         }
+        System.out.println("get user");
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+//        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String username = loginUser.getUser().getUserName().toString();
         LoginUser redisUser = JSON.parseObject(stringRedisTemplate.opsForValue().get("jwt:" + username), LoginUser.class);
         String token = "";
