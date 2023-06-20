@@ -82,4 +82,12 @@ public class AutoController {
         return autoDeployService.getLog(data);
     }
 
+    @PostMapping("/getReset")
+    public ResponseResult getReset(@RequestBody Map data){
+        String token = (String) data.get("token");
+        return autoDeployService.getReset(token);
+    }
+
+
+
 }
