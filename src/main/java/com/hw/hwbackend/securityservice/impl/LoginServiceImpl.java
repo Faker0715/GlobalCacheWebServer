@@ -2,8 +2,10 @@ package com.hw.hwbackend.securityservice.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hw.hwbackend.entity.*;
 import com.hw.hwbackend.mapper.RegMapper;
+import com.hw.hwbackend.mapper.UserMapper;
 import com.hw.hwbackend.securityservice.LoginServcie;
 import com.hw.hwbackend.util.JwtUtil;
 import com.hw.hwbackend.util.ResponseResult;
@@ -41,6 +43,10 @@ public class LoginServiceImpl implements LoginServcie {
     @Autowired
     private RegMapper regMapper;
 
+
+    @Autowired
+    private UserMapper userMapper;
+
     @Override
     public ResponseResult login(User user) {
         //AuthenticationManager authenticate进行用户认证
@@ -49,25 +55,34 @@ public class LoginServiceImpl implements LoginServcie {
 
         String encode = passwordEncoder.encode(user.getPassword());
 
-//        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
-//        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
 
-        LoginUser loginUser = regMapper.getUser(user.getUserName(), encode);
-        System.out.println("auth end!");
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        System.out.println(queryWrapper+"qurry");
+        queryWrapper.eq(User::getUserName,user.getUserName());
+
+
+        LoginUser loginUser = regMapper.getUserbyName(user.getUserName());
+//        User user1 = UserMapper.selectOne(queryWrapper);
+        System.out.println("lalala"+loginUser);
+
 
         Map<String, String> map = new HashMap<>();
-        System.out.println(loginUser);
-        System.out.println("password: " + encode);
-
-        //如果认证没通过，给出对应的提示
-        if (loginUser == null){
-            System.out.println("password error!");
-            ResponseResult responseResult = new ResponseResult(false, map, 1,"用户名或密码错误");
-            System.out.println(responseResult.toString());
-            map.put("token","");
-            return new ResponseResult(false, map, 1,"用户名或密码错误");
+        map.put("token","");
+        //如果没有查询到用户就抛出异常
+        if(Objects.isNull(loginUser)){
+            System.out.println("kong");
+            //throw new RuntimeException("用户名或者密码错误");
+            return new ResponseResult(false,map,1,"用户名或密码错误");
         }
-        System.out.println("get user");
+        if(!passwordEncoder.matches(user.getPassword(), loginUser.getPassword())) {
+            return new ResponseResult(false,map,1,"用户名或密码错误");
+        }
+
+        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+
+
+        System.out.println("auth end!");
         //如果认证通过了，使用username生成一个jwt jwt存入ResponseResult返回
 //        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String username = loginUser.getUser().getUserName().toString();

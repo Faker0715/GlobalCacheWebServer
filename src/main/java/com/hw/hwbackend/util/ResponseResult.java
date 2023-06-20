@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.MapSerializer;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import lombok.Data;
 
 public class ResponseResult<T> implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -29,6 +30,55 @@ public class ResponseResult<T> implements Serializable {
      * 返回的数据
      */
     private T data;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public boolean isVaild() {
+        return vaild;
+    }
+
+    public void setVaild(boolean vaild) {
+        this.vaild = vaild;
+    }
+
+    public int getIsSuperUser() {
+        return isSuperUser;
+    }
+
+    public void setIsSuperUser(int isSuperUser) {
+        this.isSuperUser = isSuperUser;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public boolean isSuccessed() {
+        return isSuccessed;
+    }
+
+    public void setSuccessed(boolean successed) {
+        isSuccessed = successed;
+    }
+
     //logout
     public ResponseResult(int code,String message) {
         this.code = code;
@@ -58,6 +108,7 @@ public class ResponseResult<T> implements Serializable {
     public void setData(T data) {
         this.data = data;
     }
+
 
 //    /**
 //     * 返回成功的结果（不带数据）
