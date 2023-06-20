@@ -62,7 +62,8 @@ public class LoginServiceImpl implements LoginServcie {
         //如果认证没通过，给出对应的提示
         if (loginUser == null){
             System.out.println("password error!");
-            System.out.println(new ResponseResult(false, map, 1,"用户名或密码错误"));
+            ResponseResult responseResult = new ResponseResult(false, map, 1,"用户名或密码错误");
+            System.out.println(responseResult);
             return new ResponseResult(false, map, 1,"用户名或密码错误");
         }
         System.out.println("get user");
