@@ -32,6 +32,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String token = request.getHeader("token");
         // 如果没有token 就放行
         if (!StringUtils.hasText(token)) {
+            System.out.println("jwt no token");
             filterChain.doFilter(request, response);
             return;
         }

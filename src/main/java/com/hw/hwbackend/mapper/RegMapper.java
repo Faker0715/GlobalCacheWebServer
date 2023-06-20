@@ -27,6 +27,8 @@ public interface RegMapper extends BaseMapper<User> {
     @Update("UPDATE hwlogin.finish SET is_finished = 1")
     public void setfinished();
 
+    @Update("UPDATE hwlogin.finish SET is_finished = 0")
+    public void setnofinished();
     @Update("UPDATE hwlogin.finish SET ceph1 = #{ip}")
     public void SetIp(String ip);
 
