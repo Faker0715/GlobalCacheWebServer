@@ -65,6 +65,7 @@ public class CpuService {
     }
 
     public Cpu getCpuDataByNodeId(int nodeId) {
+        System.out.println("test cpu");
         //创建redis key
         String key = CACHE_Cpu_KEY + nodeId;
         String json = stringRedisTemplate.opsForValue().get(key);
@@ -100,6 +101,7 @@ public class CpuService {
 
         Cpu cpu = cpus.get(0);
         cpu.setCpuRatio(cpuRatio);
+        System.out.println("cpu : " + cpu);
         return cpu;
     }
 
