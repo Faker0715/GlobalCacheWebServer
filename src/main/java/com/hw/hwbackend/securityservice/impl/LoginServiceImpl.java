@@ -63,7 +63,7 @@ public class LoginServiceImpl implements LoginServcie {
         if (loginUser == null){
             System.out.println("password error!");
             ResponseResult responseResult = new ResponseResult(false, map, 1,"用户名或密码错误");
-            System.out.println(responseResult);
+            System.out.println(responseResult.toString());
             map.put("token","");
             return new ResponseResult(false, map, 1,"用户名或密码错误");
         }
