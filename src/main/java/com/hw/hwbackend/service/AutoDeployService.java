@@ -56,7 +56,7 @@ public class AutoDeployService {
 
         menuMapper.truncateTable();
         regMapper.SetIp("");
-        regMapper.setfinished();
+        regMapper.setnofinished();
         // userholder
 
         UserHolder userHolder = UserHolder.getInstance();
