@@ -58,9 +58,11 @@ public class LoginServiceImpl implements LoginServcie {
         Map<String, String> map = new HashMap<>();
         System.out.println(loginUser);
         System.out.println("password: " + encode);
+
         //如果认证没通过，给出对应的提示
         if (loginUser == null){
             System.out.println("password error!");
+            System.out.println(new ResponseResult(false, map, 1,"用户名或密码错误"));
             return new ResponseResult(false, map, 1,"用户名或密码错误");
         }
         System.out.println("get user");
