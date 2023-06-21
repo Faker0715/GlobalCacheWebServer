@@ -15,29 +15,11 @@ public class Network {
 
     private long id;
 
-
-
-    private String netName;
-    private int netId;
-
-    private double send;
-
-    private double resolve;
-
-    private String netIpv4;
-
-    private String netIpv6;
-
-    private double netRatio;
-
-    private List<NetData> netData;
-
     private long time;
 
     private int nodeId;
 
-
-
+    private List<NetData> netData;
     @Data
     public static class NetData{
 
@@ -50,6 +32,12 @@ public class Network {
         private String netIpv4;
 
         private String netIpv6;
+
+        private double send;
+
+        private double resolve;
+
+        private double netRatio;
     }
 
 }

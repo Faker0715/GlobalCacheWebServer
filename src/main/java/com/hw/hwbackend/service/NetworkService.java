@@ -57,14 +57,13 @@ public class NetworkService {
         }
     }
 
-    private Network getNetData(int nodeId) {
+    private List<Network> getNetData(int nodeId) {
         //创建redis key
         String key = CACHE_Network_KEY + nodeId;
         String json = stringRedisTemplate.opsForValue().get(key);
         List<Network> networkList = new ArrayList<>();
         if(StrUtil.isNotBlank(json)){//如果redis有数据直接从中取
             networkList = JSON.parseArray(json,Network.class);
-
         }else{ //没有就从数据库查询
             networkList = networkData.findNetbyNodeId(nodeId);
             if(BeanUtil.isNotEmpty(networkList))
@@ -73,51 +72,7 @@ public class NetworkService {
         if(networkList.size() == 0){
             return null;
         }
-        //将数据封装成前端所需的格式
-        List<Network.NetData> netDataList = new ArrayList<>();
-        List<Integer> netId = new ArrayList<>();
-        //将数据合并
-        for (Network network:networkList) {
-            if (netId.size() == 0){
-                netId.add(network.getNetId());
-            }
-            if (!netId.contains(network.getNetId())){
-                netId.add(network.getNetId());
-            }
-        }
-        for (int k = 0; k < netId.size(); k++) {
-            List<Network> networks = new ArrayList<>();
-            for (Network network : networkList){
-                if (network.getNetId() == netId.get(k)){
-                    networks.add(network);
-                }
-            }
-            String[]  netNowTime = new String[networks.size()];
-            Double[] netResolve = new Double[networks.size()];
-            Double[] netSend = new Double[networks.size()];
-            for (int i = 0; i < networks.size(); i++) {
-                netSend[networks.size() -i -1] = networks.get(i).getSend();
-                netResolve[networks.size() -i -1] = networks.get(i).getResolve();
-                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");//设置日期格式
-                String date = df.format(networks.get(i).getTime());
-                netNowTime[networks.size() -i -1] = date;
-            }
-            Network.NetData netData = new Network.NetData();
-            netData.setNetName(networks.get(0).getNetName());
-            netData.setNetId(netId.get(k));
-            netData.setNetSend(netSend);
-            netData.setNetResolve(netResolve);
-            netData.setNetNowTime(netNowTime);
-            netData.setNetIpv4(networks.get(0).getNetIpv4());
-            netData.setNetIpv6(networks.get(0).getNetIpv6());
-            netDataList.add(netData);
-        }
-        Network network = new Network();
-        network.setNodeId(nodeId);
-        network.setNetData(netDataList);
-
-
-        return network;
+        return networkList;
     }
 
 }

@@ -3,6 +3,7 @@ package com.hw.hwbackend.service;
 import com.hw.globalcachesdk.GlobalCacheSDK;
 import com.hw.globalcachesdk.StatusCode;
 import com.hw.globalcachesdk.entity.NodeStatusInfo;
+import com.hw.globalcachesdk.entity.StaticNetInfo;
 import com.hw.globalcachesdk.exception.GlobalCacheSDKException;
 import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.globalcachesdk.executor.RegisterExecutor;
@@ -38,22 +39,14 @@ public class SessionService {
     }
 
     public void initSession() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        if (this.regMapper.getfinished() == 1) {
-
+        if (regMapper.getfinished() == 1) {
             // 得到所有的映射
-            List<Ceph> cephs = this.menuMapper.selectCephs();
-            List<GlobalCacheUser> globalCacheUsers = this.regMapper.getuser();
-            String ceph1 = this.regMapper.getIp();
+            List<Ceph> cephs = menuMapper.selectCephs();
+            List<GlobalCacheUser> globalCacheUsers = regMapper.getuser();
+            String ceph1 = regMapper.getCeph1Ip();
             UserHolder.getInstance().setCeph1(ceph1);
             UserHolder.getInstance().setSuccess(true);
             log.info("sessionsevice: setceph1ip: " + ceph1);
-
-
             ArrayList<String> hosts = new ArrayList<>();
             for (Ceph ceph : cephs) {
                 hosts.add(ceph.getIp());
@@ -61,7 +54,6 @@ public class SessionService {
             }
 
             for (int i = 0; i < hosts.size(); i++) {
-
                 for (int j = 0; j < globalCacheUsers.size(); j++) {
                     String password1 =  globalCacheUsers.get(j).getPassword();
                     try {
@@ -150,10 +142,29 @@ public class SessionService {
                 }
 
             }
+
+
+            Map<String,StaticNetInfo> staticNetInfomap = new HashMap<>();
+            for (int i = 0; i < ips.size(); i++) {
+                try {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(hosts.get(i)).entrySet()) {
+                        log.info("networksave-querystaticnetinfo: " + entry.getValue().getStatusCode());
+                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                            log.info("networksave-querystaticnetinfo-data: " + (StaticNetInfo) (entry.getValue().getData()));
+                            staticNetInfomap.put(entry.getKey(),(StaticNetInfo) entry.getValue().getData());
+                        }
+                    }
+                } catch (GlobalCacheSDKException e) {
+                    System.out.println("接口调用失败");
+                    e.printStackTrace();
+                }
+            }
+
             ip.setNodes(nodes);
             ip.setIdMap(idmap);
             ip.setDisks(disks);
             ip.setIps(ips);
+            ip.setStaticNetInfomap(staticNetInfomap);
             log.info("sessionservice-iprelation nodes: " + nodes.toString());
             log.info("sessionservice-iprelation idmap: " + idmap.toString());
             log.info("sessionservice-iprelation ips: " + ips.toString());

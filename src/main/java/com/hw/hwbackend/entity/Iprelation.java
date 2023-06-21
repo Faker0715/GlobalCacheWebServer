@@ -2,6 +2,7 @@ package com.hw.hwbackend.entity;
 
 import cn.hutool.core.lang.hash.Hash;
 import com.hw.globalcachesdk.GlobalCacheSDK;
+import com.hw.globalcachesdk.entity.StaticNetInfo;
 import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -21,6 +22,7 @@ public class Iprelation {
     private Map<Integer, ArrayList<Integer>> disks = new HashMap<>();
     private ArrayList<Integer> nodes = new ArrayList<>();
     private ArrayList<String> ips = new ArrayList<>();
+    private Map<String, StaticNetInfo> staticNetInfomap = new HashMap<>();
     public Map<String,Integer> getIpMap(){
         Map<String,Integer> ipMap = new HashMap<>();
         for(Map.Entry<Integer,String> entry : idMap.entrySet()){

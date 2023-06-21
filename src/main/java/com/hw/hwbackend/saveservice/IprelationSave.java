@@ -1,21 +1,16 @@
 package com.hw.hwbackend.saveservice;
 
-import cn.hutool.core.lang.hash.Hash;
 import com.hw.globalcachesdk.GlobalCacheSDK;
 import com.hw.globalcachesdk.StatusCode;
 import com.hw.globalcachesdk.entity.NodeStatusInfo;
-import com.hw.globalcachesdk.entity.PgInfo;
+import com.hw.globalcachesdk.entity.StaticNetInfo;
 import com.hw.globalcachesdk.exception.GlobalCacheSDKException;
 import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.globalcachesdk.executor.RegisterExecutor;
 import com.hw.hwbackend.dataservice.IprelationData;
-import com.hw.hwbackend.dataservice.PgListData;
-import com.hw.hwbackend.entity.HealthList;
 import com.hw.hwbackend.entity.Iprelation;
-import com.hw.hwbackend.entity.PgList;
 import com.hw.hwbackend.mapper.RegMapper;
 import com.hw.hwbackend.util.UserHolder;
-import com.mongodb.client.model.IndexOptionDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +32,7 @@ public class IprelationSave {
     private RegMapper regMapper;
 
     public void IprelationSchedule() {
-        String cephip = regMapper.getIp();
+        String cephip = regMapper.getCeph1Ip();
         if(UserHolder.getInstance().getCeph1() != cephip){
             UserHolder.getInstance().setCeph1(cephip);
         }
@@ -48,6 +43,7 @@ public class IprelationSave {
         ArrayList<Integer> nodes = new ArrayList<>();
         ArrayList<String> ips = new ArrayList<>();
         NodeStatusInfo nodeStatusInfo = new NodeStatusInfo();
+        Map<String, StaticNetInfo> staticNetInfomap = new HashMap<>();
         int tryTimes = 5;
         int oldTimeout = 0;
         try {
@@ -63,6 +59,7 @@ public class IprelationSave {
         // 当前接口超时等待时间
         int curTimeout = oldTimeout;
         boolean flag = false;
+
         for (int i = 0; i < tryTimes; ++i) {
             if (flag)
                 break;
@@ -90,6 +87,21 @@ public class IprelationSave {
                         GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_NODE_STATUS_INFO, curTimeout);
                     }
                 }
+
+
+                for (String host:ips){
+                    try {
+                        for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(host).entrySet()) {
+                            if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+                                staticNetInfomap.put(host,(StaticNetInfo) entry.getValue().getData());
+                            }
+                        }
+                    } catch (GlobalCacheSDKException e) {
+                        System.out.println("接口调用失败");
+                        e.printStackTrace();
+                    }
+                }
+
             } catch (GlobalCacheSDKException | InterruptedException e) {
                 System.out.println("接口调用失败");
                 e.printStackTrace();
@@ -101,11 +113,13 @@ public class IprelationSave {
             System.out.println("设置执行时间失败");
             e.printStackTrace();
         }
+
         ip.setId(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
         ip.setNodes(nodes);
         ip.setIdMap(idmap);
         ip.setDisks(disks);
         ip.setIps(ips);
+        ip.setStaticNetInfomap(staticNetInfomap);
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.setIprelation(ip);
         userHolder.setSuccess(true);
