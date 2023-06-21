@@ -30,6 +30,8 @@ public class DiskSave {
 
         private static Logger log = LoggerFactory.getLogger(DiskSave.class);
         public void DiskSchedule() {
+
+            long stime = System.currentTimeMillis();
             //获取连接当前节点信息
             UserHolder userHolder = UserHolder.getInstance();
             ArrayList<String> hosts = userHolder.getIprelation().getIps();
@@ -120,6 +122,10 @@ public class DiskSave {
 
                 log.info("disksave-disk: " + disk.toString());
             }
+
+            long etime = System.currentTimeMillis();
+            // 计算执行时间
+            System.out.printf("disksave执行时长：%d 毫秒.", (etime - stime));
 
         }
 
