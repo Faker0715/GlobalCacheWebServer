@@ -57,13 +57,14 @@ public class NetworkService {
         }
     }
 
-    private List<Network> getNetData(int nodeId) {
+    private Network getNetData(int nodeId) {
         //创建redis key
         String key = CACHE_Network_KEY + nodeId;
         String json = stringRedisTemplate.opsForValue().get(key);
         List<Network> networkList = new ArrayList<>();
         if(StrUtil.isNotBlank(json)){//如果redis有数据直接从中取
             networkList = JSON.parseArray(json,Network.class);
+
         }else{ //没有就从数据库查询
             networkList = networkData.findNetbyNodeId(nodeId);
             if(BeanUtil.isNotEmpty(networkList))
@@ -72,7 +73,49 @@ public class NetworkService {
         if(networkList.size() == 0){
             return null;
         }
-        return networkList;
+        //将数据封装成前端所需的格式
+        List<Integer> netIdlist = new ArrayList<>();
+        //将数据合并
+        List<Network.NetData> idlist = networkList.get(0).getNetData();
+        for (Network.NetData netData:idlist) {
+            netIdlist.add(netData.getNetId());
+        }
+        List<Network.NetData> endDataList = new ArrayList<>();
+        for (Integer id: netIdlist) {
+            List<Network.NetData> netDataList  = new ArrayList<>();
+            for (Network network : networkList){
+                List<Network.NetData> list = network.getNetData();
+                for(Network.NetData netData: list){
+                    if(netData.getNetId() == id){
+                        netDataList.add(netData);
+                    }
+                }
+            }
+            String[]  netNowTime = new String[netDataList.size()];
+            Double[] netResolve = new Double[netDataList.size()];
+            Double[] netSend = new Double[netDataList.size()];
+
+            for (int i = 0; i < netDataList.size(); i++) {
+                netSend[netDataList.size() -i -1] = netDataList.get(i).getSend();
+                netResolve[netDataList.size() -i -1] = netDataList.get(i).getResolve();
+                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");//设置日期格式
+                String date = df.format(netDataList.get(i).getTime());
+                netNowTime[netDataList.size() -i -1] = date;
+            }
+            Network.NetData netData = new Network.NetData();
+            netData.setNetName(netDataList.get(0).getNetName());
+            netData.setNetId(id);
+            netData.setNetSend(netSend);
+            netData.setNetResolve(netResolve);
+            netData.setNetNowTime(netNowTime);
+            netData.setNetIpv4(netDataList.get(0).getNetIpv4());
+            netData.setNetIpv6(netDataList.get(0).getNetIpv6());
+            endDataList.add(netData);
+        }
+        Network network = new Network();
+        network.setNodeId(nodeId);
+        network.setNetData(endDataList);
+        return network;
     }
 
 }

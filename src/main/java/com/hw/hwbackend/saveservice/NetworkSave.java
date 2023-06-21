@@ -60,6 +60,7 @@ public class NetworkSave {
             List<Network.NetData> netDatalist = new ArrayList<>();
             ArrayList<StaticNetInfo.InterfaceInfo> staticnetList = staticNetInfomap.get(hosts.get(i)).getInterfaceInfoList();
             ArrayList<DynamicNetInfo.InterfaceInfo> dynamicnetList = dynamicNetInfomap.get(hosts.get(i)).getInterfaceInfos();
+            int index = 0;
             for (int k = 0; k < staticnetList.size() ; k++) {
                 StaticNetInfo.InterfaceInfo staticinterfaceInfo = staticnetList.get(k);
                 if(staticinterfaceInfo.getIpv4().equals("") || staticinterfaceInfo.getIpv4().contains("127.0.0.1")){
@@ -79,10 +80,11 @@ public class NetworkSave {
                         String []str2 = ipv6.split("/");
                         netData.setNetIpv4(str1[0]);
                         netData.setNetIpv6(str2[0]);
-                        netData.setNetId(i);
+                        netData.setNetId(index++);
                         netData.setNetRatio(1);
                         netData.setResolve(dynamicinterfaceInfo.getRxkBs());
                         netData.setSend(dynamicinterfaceInfo.getTxkBs());
+                        netData.setTime(time);
                         netDatalist.add(netData);
                         //保存
                     }

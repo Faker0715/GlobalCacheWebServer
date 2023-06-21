@@ -22,6 +22,7 @@ public class Network {
     private List<NetData> netData;
     @Data
     public static class NetData{
+        private long time;
 
         private String netName;
         private int netId;
@@ -36,6 +37,7 @@ public class Network {
         private double send;
 
         private double resolve;
+
 
         private double netRatio;
     }
