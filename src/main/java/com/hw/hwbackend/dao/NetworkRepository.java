@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface NetworkRepository extends MongoRepository<Network,String >{
-    Page<Network> findByNetId(String netId, Pageable pageable);
+//    Page<Network> findByNetId(String netId, Pageable pageable);
 }
