@@ -81,7 +81,6 @@ public class NetworkSave {
                         netData.setNetIpv4(str1[0]);
                         netData.setNetIpv6(str2[0]);
                         netData.setNetId(index++);
-                        netData.setNetRatio(1);
                         netData.setResolve(dynamicinterfaceInfo.getRxkBs());
                         netData.setSend(dynamicinterfaceInfo.getTxkBs());
                         netData.setTime(time);

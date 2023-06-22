@@ -37,9 +37,6 @@ public class Network {
         private double send;
 
         private double resolve;
-
-
-        private double netRatio;
     }
 
 }

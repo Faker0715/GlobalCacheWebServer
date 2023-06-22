@@ -1,12 +1,12 @@
 package com.hw.hwbackend.entity;
 import com.hw.globalcachesdk.entity.CacheDiskInfo;
-import com.hw.globalcachesdk.entity.DiskInfo;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 
@@ -16,62 +16,42 @@ public class Disk
 {
 
     private long id;
-    private Disk.DiskList diskList;
-
-    private List<Disk.DiskInfo> diskInfo;
-
-    private List<Disk.DiskIORatio> diskIORatio;
     private int nodeId;
-
+    private Map<String,AllDiskInfo> diskInfoMap;
     private long time;
 
+    @Data
+    public static class AllDiskInfo{
+        private DiskBasicInfo diskBasicInfo;
+        private DiskIoInfoBase diskIORatio;
+    }
 
 
     @Data
-    public static class DiskIo {
-
+    public static class DiskIoInfoBase {
         private String name;
         private float readRatio;
-
         private float writeRatio;
-        private Time diskNowTime;
-
         private long time;
-
-        private int nodeId;
+        private Float[] readRatioArr;
+        private Float[] writeRatioArr;
+        private String[] diskNowTimeArr;
     }
 
     @Data
-    public static class DiskList {
-        List<Disk.DiskInfo> diskInfo;
-        List<Disk.DiskIo> diskIORatio;
-
-    }
-
-    @Data
-    public static class DiskInfo{
-        private String diskName;
-        private int diskId;
+    public static class DiskBasicInfo{
+        private String name;
         private double diskCapacity;
         private String diskType;
-        private String diskSn;
-        private long time;
-        private CacheDiskInfo.CacheDiskState state;
-        private int nodeId;
-
+        private List<CacheInfo> cacheInfolist;
     }
 
     @Data
-    public static class DiskIORatio{
-
-        private String name;
-
-        private Float[] readRatio;
-
-        private Float[] writeRatio;
-
-        private String[] diskNowTime;
-
+    public static class CacheInfo{
+        private String CacheName;
+        private int diskId;
+        private String diskSn;
+        private CacheDiskInfo.CacheDiskState state;
     }
 
 }
