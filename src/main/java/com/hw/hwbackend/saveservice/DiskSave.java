@@ -39,6 +39,7 @@ public class DiskSave {
         //获取连接当前节点信息
         UserHolder userHolder = UserHolder.getInstance();
         ArrayList<String> hosts = userHolder.getIprelation().getIps();
+        System.out.println("disk hosts: "+ hosts);
         Map<String, Integer> ipmap = userHolder.getIprelation().getIpMap();
 
         Map<Integer, ArrayList<Integer>> disksmap = userHolder.getIprelation().getDisks();
@@ -148,7 +149,7 @@ public class DiskSave {
         }
         long etime = System.currentTimeMillis();
         // 计算执行时间
-        System.out.printf("disksave time：%d ms.", (etime - stime));
+        System.out.printf("disksave time: %d ms.", (etime - stime));
 
     }
 

@@ -47,7 +47,8 @@ public class PtListSave {
         int oldTimeout = 0;
         try {
             // 记录当前接口默认超时等待时间
-            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_PT_IO_INFO).getTimeout();
+//            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_PT_IO_INFO).getTimeout();
+            oldTimeout = GlobalCacheSDK.getCommandTimeout(RegisterExecutor.QUERY_PT_IO_INFO);
         } catch (GlobalCacheSDKException e) {
             System.out.println("获取执行时间失败");
             e.printStackTrace();
@@ -93,7 +94,7 @@ public class PtListSave {
 
         try {
             // 记录当前接口默认超时等待时间
-            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_ALL_PT_INFO).getTimeout();
+            oldTimeout = GlobalCacheSDK.getCommandTimeout(RegisterExecutor.QUERY_ALL_PT_INFO);
         } catch (GlobalCacheSDKException e) {
             System.out.println("获取执行时间失败");
             e.printStackTrace();

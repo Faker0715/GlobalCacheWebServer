@@ -41,7 +41,7 @@ public class PgListSave {
         int oldTimeout = 0;
         try {
             // 记录当前接口默认超时等待时间
-            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_ALL_PG_INFO).getTimeout();
+            oldTimeout = GlobalCacheSDK.getCommandTimeout(RegisterExecutor.QUERY_ALL_PG_INFO);
         } catch (GlobalCacheSDKException e) {
             System.out.println("获取执行时间失败");
             e.printStackTrace();
