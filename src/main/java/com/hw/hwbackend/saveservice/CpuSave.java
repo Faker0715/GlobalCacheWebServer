@@ -58,6 +58,7 @@ public class CpuSave {
         try {
             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryCpuInfo(hosts).entrySet()) {
 
+                log.info("cpusave-cpu: start ");
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     cpuInfo = (CpuInfo) entry.getValue().getData();
                     //封装
@@ -72,6 +73,8 @@ public class CpuSave {
                     log.info("cpusave-cpu: " + cpu.toString());
                     //保存到数据库
                     cpuData.saveCPU(cpu);
+                }else{
+                    log.info("cpusave-cpu: error");
                 }
             }
         } catch (GlobalCacheSDKException e) {

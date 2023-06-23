@@ -55,9 +55,9 @@ public class CpuService {
             System.out.println(wsdto.getUrl());
             System.out.println(wsdto.getParams());
             if (wsdto.getUrl().equals("/getCpuData") && wsdto.getParams().getNodeId() != -1) {
-                System.out.println("cpu will send: " + jsonObject);
                 jsonObject.put("params", getCpuDataByNodeId(wsdto.getParams().getNodeId()));
                 jsonObject.put("token", wsdto.getParams().getToken());
+                System.out.println("cpu will send: " + jsonObject);
                 //发送给前端
                 entry.getValue().writeAndFlush(new TextWebSocketFrame(jsonObject.toJSONString()));
             }
