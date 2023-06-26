@@ -54,6 +54,8 @@ public class CpuSave {
             System.out.println("接口调用失败");
             e.printStackTrace();
         }
+
+        log.info("cpusave-worktime: ",worktimemap);
         //获取Cpu相关数据
         try {
             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryCpuInfo(hosts).entrySet()) {
