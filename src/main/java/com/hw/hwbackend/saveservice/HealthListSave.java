@@ -85,6 +85,7 @@ public class HealthListSave {
                         } else {
                             healthList.setClusterState("false");
                         }
+                        System.out.println("HealthStatus: "+ healthList.getClusterState());
                         flag = true;
                     } else if (entry.getValue().getStatusCode() == StatusCode.EXEC_COMMAND_FAILED) {
                         // 处理线程执行中断的情况 -> 休眠，等待下一次尝试
