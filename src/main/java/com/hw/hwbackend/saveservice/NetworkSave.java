@@ -28,6 +28,8 @@ public class NetworkSave {
 
     private static Logger log = LoggerFactory.getLogger(NetworkSave.class);
     public void NetworkSchedule() {
+
+        long stime = System.currentTimeMillis();
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
         //获取连接当前节点信息
@@ -98,6 +100,10 @@ public class NetworkSave {
 
         }
 
+
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("networksave time: %d ms.", (etime - stime));
     }
 
 }

@@ -34,6 +34,8 @@ public class MemorySave {
     private MemoryData memoryData;
 
     public void MemorySchedule() {
+
+        long stime = System.currentTimeMillis();
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
         //获取连接当前节点信息
@@ -63,6 +65,10 @@ public class MemorySave {
             System.out.println("接口调用失败");
             e.printStackTrace();
         }
+
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("memorysave time: %d ms.", (etime - stime));
 
     }
 

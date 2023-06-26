@@ -27,6 +27,7 @@ public class CpuCalenderSave {
     private CpuCalenderData cpuCalenderData;
     private static Logger log = LoggerFactory.getLogger(CpuCalenderSave.class);
     void CpuCalenderSchedule() {
+        long stime = System.currentTimeMillis();
         //获取连接当前节点信息
         UserHolder userHolder = UserHolder.getInstance();
         ArrayList<String> hosts = userHolder.getIprelation().getIps();
@@ -58,6 +59,9 @@ public class CpuCalenderSave {
         //保存数据库
         cpuCalender.setCpuNodeArrayList(cpuNodeArrayList);
         cpuCalenderData.saveCpuCalender(cpuCalender);
+
+        long etime = System.currentTimeMillis();
+        System.out.printf("cpucalendersave time: %d ms.", (etime - stime));
     }
 }
 

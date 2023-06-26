@@ -35,6 +35,8 @@ public class PtListSave {
     private PtListData ptListData;
 
     public void PtListSchedule() {
+
+        long stime = System.currentTimeMillis();
         //获取连接当前节点信息
         String cephip = UserHolder.getInstance().getCeph1();
         UserHolder userHolder = UserHolder.getInstance();
@@ -190,6 +192,9 @@ public class PtListSave {
 
         }
 
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("ptsave time: %d ms.", (etime - stime));
     }
 
 }

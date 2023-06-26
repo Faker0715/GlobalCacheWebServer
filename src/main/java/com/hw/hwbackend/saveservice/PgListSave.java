@@ -29,6 +29,8 @@ public class PgListSave {
 
     public void PgListSchedule() {
 
+        long stime = System.currentTimeMillis();
+
         String cephip = UserHolder.getInstance().getCeph1();
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
@@ -120,6 +122,10 @@ public class PgListSave {
             //保存
             pgListData.savePgList(pgList);
         }
+
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("pgsave time: %d ms.", (etime - stime));
 
     }
 }

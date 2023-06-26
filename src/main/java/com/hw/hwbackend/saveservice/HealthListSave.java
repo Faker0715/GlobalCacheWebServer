@@ -38,6 +38,7 @@ public class HealthListSave {
     private HealthListData healthListData;
 
     public void HealthListSchedule() {
+        long stime = System.currentTimeMillis();
         ArrayList<Tuple3<String,String,String>> infolist = new ArrayList<>();
         //根据查询到的日志信息 判断节点的健康状态
         String cephip = UserHolder.getInstance().getCeph1();
@@ -169,6 +170,8 @@ public class HealthListSave {
         healthList.setId(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
         healthListData.saveHealthList(healthList);
 
+        long etime = System.currentTimeMillis();
+        System.out.printf("healthsave time: %d ms.", (etime - stime));
     }
 
 }

@@ -29,6 +29,7 @@ public class CpuSave {
     private CpuData cpuData;
     private static Logger log = LoggerFactory.getLogger(CpuSave.class);
     public void CpuSchedule() {
+        long stime = System.currentTimeMillis();
         //获取连接当前节点信息
         UserHolder userHolder = UserHolder.getInstance();
         ArrayList<String> hosts = userHolder.getIprelation().getIps();
@@ -84,6 +85,10 @@ public class CpuSave {
             System.out.println("接口调用失败");
             e.printStackTrace();
         }
+
+        long etime = System.currentTimeMillis();
+        System.out.printf("cpusave time: %d ms.", (etime - stime));
+
     }
 }
 
