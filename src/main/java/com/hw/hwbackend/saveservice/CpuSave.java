@@ -46,7 +46,8 @@ public class CpuSave {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     UptimeInfo up = (UptimeInfo) (entry.getValue().getData());
                     worktime = (int) up.getUptime();
-                    worktimemap.put(entry.getKey(),worktime); 
+                    worktimemap.put(entry.getKey(),worktime);
+                    log.info("cpusave-worktime: " + worktime);
                 }
             }
         } catch (
@@ -55,7 +56,7 @@ public class CpuSave {
             e.printStackTrace();
         }
 
-        log.info("cpusave-worktime: ",worktimemap);
+        log.info("cpusave-worktimemap: " + worktimemap.toString());
         //获取Cpu相关数据
         try {
             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryCpuInfo(hosts).entrySet()) {

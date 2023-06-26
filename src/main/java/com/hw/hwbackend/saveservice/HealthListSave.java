@@ -42,7 +42,7 @@ public class HealthListSave {
         //根据查询到的日志信息 判断节点的健康状态
         String cephip = UserHolder.getInstance().getCeph1();
 
-        infolist.add(Tuple.of("ERROR", "NODE", "temporarily faulty and cannot provide servicestemporarily."));
+        infolist.add(Tuple.of("ERROR", "NODE", "temporarily faulty and cannot provide services temporarily."));
         infolist.add(Tuple.of("ERROR", "NODE", "permanently faulty and removed from the cluster"));
         infolist.add(Tuple.of("ERROR", "DISK", "disk is faulty."));
         infolist.add(Tuple.of("WARN", "DISK", "disk capacity of the ceph pool reaches 80%."));
