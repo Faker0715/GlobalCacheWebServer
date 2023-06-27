@@ -45,7 +45,6 @@ public class SessionService {
             List<GlobalCacheUser> globalCacheUsers = regMapper.getuser();
             String ceph1 = regMapper.getCeph1Ip();
             UserHolder.getInstance().setCeph1(ceph1);
-            UserHolder.getInstance().setSuccess(true);
             log.info("sessionsevice: setceph1ip: " + ceph1);
             ArrayList<String> hosts = new ArrayList<>();
             for (Ceph ceph : cephs) {
