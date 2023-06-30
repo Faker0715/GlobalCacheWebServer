@@ -37,7 +37,6 @@ public class WebSocketHandlerListenterImpl implements WebSocketHandlerListenter 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("current end channel: " + ctx.channel().id().asLongText());
-//        webSocketCloseService.removeChannel(ctx.channel().id().asLongText());
         WebSocketHandlerListenterImpl.getInstance().WebsocketMap.remove(ctx.channel().id().asLongText());
         WebSocketHandlerListenterImpl.getInstance().chanelIdMap.remove(ctx.channel().id().asLongText());
     }

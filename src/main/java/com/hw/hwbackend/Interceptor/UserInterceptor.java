@@ -33,8 +33,6 @@ public class UserInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("token");
         if (StrUtil.isBlank(token)) {
-
-            System.out.println("user no token");
             return true;
         }
         String userid = "";
@@ -47,24 +45,21 @@ public class UserInterceptor implements HandlerInterceptor {
             throw new RuntimeException("token非法");
         }
         System.out.println("userid : " + userid);
-        // 2.基于TOKEN获取redis中的用户
+        // 1.基于TOKEN获取redis中的用户
         String key  =  "jwt:" + userid;
         LoginUser loginUser =  JSON.parseObject(stringRedisTemplate.opsForValue().get("jwt:"+userid),LoginUser.class);
-        // 3.判断用户是否存在
+        // 2.判断用户是否存在
         if (loginUser == null) {
             System.out.println("user null");
             return true;
         }
-        // 5.将查询到的hash数据转为UserDTO
-//        User user = BeanUtil.fillBeanWithMap(userMap, new User(), false);
-        // 6.存在，保存用户信息到 ThreadLocal
+        // 3.存在，保存用户信息到 ThreadLocal
         UserContext.setCurrentUser(loginUser.getUser());
-        // 设置刷新时间
+        // 4.设置刷新时间
         stringRedisTemplate.opsForValue().set("jwt:" + loginUser.getUser().getUserName(), JSONUtil.toJsonStr(loginUser), 30 * 60, TimeUnit.SECONDS);
-        // 7.刷新token有效期
+        // 5.刷新token有效期
         stringRedisTemplate.expire(key, 30*60, TimeUnit.MINUTES);
-
-        // 8.放行
+        // 6.放行
         return true;
     }
 

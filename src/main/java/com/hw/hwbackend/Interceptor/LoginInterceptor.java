@@ -23,13 +23,11 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 1.判断是否需要拦截（ThreadLocal中是否有用户）
-
         String token = request.getHeader("token");
         if (StrUtil.isBlank(token)) {
             System.out.println("no token");
             return true;
         }
-        System.out.println("has token");
         String userid = "";
         try {
             Claims claims = JwtUtil.parseJWT(token);
@@ -45,9 +43,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         if (loginUser == null) {
             return true;
         }
-
         if (UserContext.getCurrentUser() == null) {
-            System.out.println("401401401401401");
             // 没有，需要拦截，设置状态码
             response.setStatus(401);
             // 拦截
@@ -56,5 +52,6 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 有用户，则放行
         return true;
     }
+
 
 }

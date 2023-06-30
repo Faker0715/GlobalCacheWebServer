@@ -26,14 +26,12 @@ public class WebsocketSecurityImpl implements WebsocketSecurity {
         // 先判断url是否是websocket的url
         Boolean isPass = authService.authUrl(socketRequest.getUrl());
         WebSocketHandlerListenterImpl webSocketHandlerListenterImpl = WebSocketHandlerListenterImpl.getInstance();
-//        System.out.println(socketRequest.getUrl());
         // 如果不通过
         if(!isPass){
             System.out.println("not pass!");
             // 先给前端发一条消息
             ctx.channel().writeAndFlush(new TextWebSocketFrame(JsonUtils.objToJson(new SocketResponse(HttpResponseStatus.UNAUTHORIZED.code(), "授权不通过！"))));
             // 如果存在连接 那么主动删除对象
-
             if(webSocketHandlerListenterImpl.WebsocketMap.contains(ctx.channel().id().asLongText())){
                webSocketHandlerListenterImpl.WebsocketMap.remove(ctx.channel().id().asLongText());
             }
