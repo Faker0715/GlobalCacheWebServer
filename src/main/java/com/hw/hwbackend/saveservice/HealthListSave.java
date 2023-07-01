@@ -58,6 +58,7 @@ public class HealthListSave {
         infolist.add(Tuple.of("ERROR", "DISK", "the disk has fault state pt."));
 
 
+        System.out.println("Healthip: "+cephip);
         // 失败尝试次数
         int tryTimes = 5;
         int oldTimeout = 0;
@@ -126,8 +127,13 @@ public class HealthListSave {
             try {
                 for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryClusterAlarmInfo(cephip).entrySet()) {
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
+
                         ClusterAlarmInfo alarmInfo = (ClusterAlarmInfo) entry.getValue().getData();
+
+                        System.out.println("queryClusterAlarmInfo: " + alarmInfo.toString());
                         ArrayList<ClusterAlarmInfo.AlarmInfo> alarmInfoArraylist = alarmInfo.getAlarmInfoList();
+
+                        System.out.println("queryClusterAlarmInfoList: " + alarmInfoArraylist.get(0).getLog());
                         for (int k = 0; k < alarmInfoArraylist.size(); ++k) {
                             String log = alarmInfoArraylist.get(k).getLog();
                             HealthList.Health h = new HealthList.Health();
