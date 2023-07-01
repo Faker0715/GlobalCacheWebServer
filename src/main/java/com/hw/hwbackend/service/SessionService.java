@@ -170,8 +170,8 @@ public class SessionService {
                 UserHolder.getInstance().getClusterMap().put(entry.getKey(),true);
                 UserHolder.getInstance().getClusterCephMap().put(array,true);
             }
-
-
+            System.out.println("userholderclustermap: " + UserHolder.getInstance().getClusterMap().toString());
+            System.out.println("userholderclustercephmap: "+UserHolder.getInstance().getClusterCephMap().toString());
 
             ip.setNodes(nodes);
             ip.setIdMap(idmap);
