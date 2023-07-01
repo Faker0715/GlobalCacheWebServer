@@ -42,10 +42,7 @@ public class SessionService {
         if (regMapper.getfinished() == 1) {
             // 得到所有的映射
             List<GlobalCacheUser> globalCacheUsers = regMapper.getuser();
-            String ceph1 = regMapper.getCeph1Ip();
-            UserHolder.getInstance().setCeph1(ceph1);
             HashMap<String, Boolean> clusterMap = new HashMap<>();
-
             // 程序已启动先更新node表
             Iprelation ip = new Iprelation();
             Map<Integer, String> idmap = new HashMap<>();
@@ -86,6 +83,7 @@ public class SessionService {
                 if(flag){
                     clusterMap.put(ips.get(i),true);
                 }
+                UserHolder.getInstance().setCeph1(ips.get(i));
             }
 
             Map<String, StaticNetInfo> staticNetInfomap = new HashMap<>();
