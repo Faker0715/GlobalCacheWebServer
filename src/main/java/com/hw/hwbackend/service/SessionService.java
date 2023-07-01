@@ -72,14 +72,19 @@ public class SessionService {
             }
             ip.setId(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
             for (int i = 0; i < ips.size(); i++) {
+                Boolean flag = true;
                 for (int j = 0; j < globalCacheUsers.size(); j++) {
-                    String password1 = globalCacheUsers.get(j).getPassword();
+                    String password = globalCacheUsers.get(j).getPassword();
                     try {
-                        GlobalCacheSDK.createSession(ips.get(i), globalCacheUsers.get(j).getUsername(), password1, 22);
+                        GlobalCacheSDK.createSession(ips.get(i), globalCacheUsers.get(j).getUsername(), password, 22);
                     } catch (GlobalCacheSDKException e) {
+                        flag = false;
                         System.out.println("createSession失败 " + ips.get(i) + " " + globalCacheUsers.get(j).getUsername());
                         e.printStackTrace();
                     }
+                }
+                if(flag){
+                    clusterMap.put(ips.get(i),true);
                 }
             }
 
