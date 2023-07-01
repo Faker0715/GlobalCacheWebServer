@@ -30,14 +30,11 @@ import static java.lang.Thread.sleep;
 @Service
 public class SessionService {
     private final RegMapper regMapper;
-    private final MenuMapper menuMapper;
-
     private static Logger log = LoggerFactory.getLogger(SessionService.class);
 
     @Autowired
-    public SessionService(RegMapper regMapper, MenuMapper menuMapper) {
+    public SessionService(RegMapper regMapper) {
         this.regMapper = regMapper;
-        this.menuMapper = menuMapper;
         initSession();
     }
 
@@ -47,7 +44,6 @@ public class SessionService {
             List<GlobalCacheUser> globalCacheUsers = regMapper.getuser();
             String ceph1 = regMapper.getCeph1Ip();
             UserHolder.getInstance().setCeph1(ceph1);
-            ArrayList<String> hosts = new ArrayList<>();
             HashMap<String, Boolean> clusterMap = new HashMap<>();
 
             // 程序已启动先更新node表
@@ -58,6 +54,7 @@ public class SessionService {
             ArrayList<String> ips = new ArrayList<>();
             try {
                 NodeStatusInfo nodeStatusInfo = (NodeStatusInfo) GlobalCacheSDK.queryNodeStatusInfoLocal();
+                System.out.println(nodeStatusInfo.toString());
                 for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
                     idmap.put(node.getNodeId(), node.getClusterIp());
                     clusterMap.put(node.getClusterIp(),false);
@@ -89,7 +86,7 @@ public class SessionService {
             Map<String, StaticNetInfo> staticNetInfomap = new HashMap<>();
             for (int i = 0; i < ips.size(); i++) {
                 try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(hosts.get(i)).entrySet()) {
+                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(ips.get(i)).entrySet()) {
                         log.info("networksave-querystaticnetinfo: " + entry.getValue().getStatusCode());
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                             log.info("networksave-querystaticnetinfo-data: " + (StaticNetInfo) (entry.getValue().getData()));

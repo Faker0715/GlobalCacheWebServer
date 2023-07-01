@@ -22,7 +22,7 @@ public class SessionConnectedService {
     private final RegMapper regMapper;
 
     @Autowired
-    public SessionConnectedService(RegMapper regMapper, MenuMapper menuMapper) {
+    public SessionConnectedService(RegMapper regMapper) {
         this.regMapper = regMapper;
     }
 
