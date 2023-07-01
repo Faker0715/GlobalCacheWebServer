@@ -76,13 +76,13 @@ public class CpuCalenderSave {
                 log.info("cpucalender-querycpuinfo: " + entry.getValue().getStatusCode());
                 CpuCalender.CpuNode cpunode = new CpuCalender.CpuNode();
                 cpunode.setIsOnline(UserHolder.getInstance().getClusterMap().get(entry.getKey()));
+                int nodeId = ipmap.get(entry.getKey());
+                cpunode.setNodeId(nodeId);
                 if(cpunode.getIsOnline() == false){
                     System.out.println("cpu not online: " + entry.getKey());
                 }
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     CpuInfo cpuInfo = (CpuInfo) entry.getValue().getData();
-                    int nodeId = ipmap.get(entry.getKey());
-                    cpunode.setNodeId(nodeId);
                     cpunode.setNodeValue(cpuInfo.getTotalUsage());
                     ArrayList<NodeStatusInfo.NodeState> statusarr = statusmap.get(entry.getKey());
                     CpuCalender.CpuNode.NodeState state;
