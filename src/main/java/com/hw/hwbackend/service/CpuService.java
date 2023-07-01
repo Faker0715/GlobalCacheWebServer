@@ -70,12 +70,14 @@ public class CpuService {
         String key = CACHE_Cpu_KEY + nodeId;
         String json = stringRedisTemplate.opsForValue().get(key);
         List<Cpu> cpus = new ArrayList<>();
+        System.out.println("getCpuDataByNodeIdjson: "+json);
         //如果redis有数据直接从中取
-        if (StrUtil.isNotBlank(json)) {
+        if (StrUtil.isNotBlank(json) && false == json.equals("")) {
             cpus = JSON.parseArray(json, Cpu.class);
         } else {
             //没有就从数据库查询
             cpus = cpuData.findCpubyNodeId(nodeId);
+            System.out.println("findcpus: "+cpus.toString());
             if (BeanUtil.isNotEmpty(cpus))
                 stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(cpus), CACHE_Cpu_TIMEOUT, TimeUnit.SECONDS);
         }

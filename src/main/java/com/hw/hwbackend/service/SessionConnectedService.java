@@ -41,6 +41,7 @@ public class SessionConnectedService {
                     e.printStackTrace();
                 }
             }
+            UserHolder.getInstance().setCeph1(entry.getKey());
             UserHolder.getInstance().getClusterMap().put(entry.getKey(), flag);
         }
 
