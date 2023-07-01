@@ -104,7 +104,7 @@ public class AbstractService {
     }
 
     @XxlJob("getSessionConnected")
-    @XxlRegister(cron = "0 0/1 * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
+    @XxlRegister(cron = "0/30 * * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
     public void getSessionConnected() {
         System.out.println("start getSessionConnected");
         if(UserHolder.getInstance().isSuccess() == false){

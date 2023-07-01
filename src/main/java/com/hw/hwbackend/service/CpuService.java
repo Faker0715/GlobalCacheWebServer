@@ -72,7 +72,7 @@ public class CpuService {
         List<Cpu> cpus = new ArrayList<>();
         System.out.println("getCpuDataByNodeIdjson: "+json);
         //如果redis有数据直接从中取
-        if (StrUtil.isNotBlank(json) && false == json.equals("")) {
+        if (StrUtil.isNotBlank(json)){
             cpus = JSON.parseArray(json, Cpu.class);
         } else {
             //没有就从数据库查询

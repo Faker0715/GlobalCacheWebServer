@@ -54,7 +54,6 @@ public class AutoDeployService {
         // finish 设置为0
         // ceph1设置为0
 
-        menuMapper.truncateTable();
         regMapper.SetIp("");
         regMapper.setnofinished();
         // userholder
@@ -779,37 +778,10 @@ public class AutoDeployService {
         Runnable finishRunnable = new Runnable() {
             public void run() {
                 System.out.println("线程开始运行");
-                String ceph1ip = "";
-                List<Ceph> cephs = new ArrayList<>();
-                ArrayList<String> hosts = new ArrayList<>();
-                for (AutoList.AutoEntity entity : userHolder.getAutoMap().get(token).getAutoEntityArrayList()) {
-                    hosts.add(entity.getRemoteIPv4());
-                    if (entity.getRoleName().equals("ceph1")) {
-                        ceph1ip = entity.getRemoteIPv4();
-                    }
-                    if (entity.getRoleName().contains("ceph")) {
-                        Ceph ceph = new Ceph(entity.getRoleName(), entity.getRemoteIPv4());
-                        cephs.add(ceph);
-                    }
-                }
-                // 释放root
-                // 1. 清空role table
-                // 2. 512个 arraylist<string> 保存
-                menuMapper.truncateTable();
-                menuMapper.insertCephs(cephs);
-
-                userHolder.setCeph1(ceph1ip);
-                regMapper.SetIp(ceph1ip);
                 regMapper.setfinished();
-                System.out.println("数据库运行");
+                // 必须保证数据库写入完成
+                sleep(1000);
                 sessionService.initSession();
-                for (int i = 0; i < hosts.size(); i++) {
-                    try {
-                        GlobalCacheSDK.releaseSession(hosts.get(i), "root");
-                    } catch (GlobalCacheSDKException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         };
         Thread finishThread = new Thread(finishRunnable);

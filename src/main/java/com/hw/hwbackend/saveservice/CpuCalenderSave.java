@@ -48,27 +48,18 @@ public class CpuCalenderSave {
         Map<String, Integer> ipmap = userHolder.getIprelation().getIpMap();
         ArrayList<CpuCalender.CpuNode> cpuNodeArrayList = new ArrayList<>();
         log.info("cpucalender-hosts: " + hosts.toString());
-        String ceph1 = userHolder.getCeph1();
-
         // 获取cpu状态
-
-        NodeStatusInfo nodeStatusInfo = new NodeStatusInfo();
         Map<String, ArrayList<NodeStatusInfo.NodeState>> statusmap = new HashMap<>();
-
         try {
-            for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryNodeStatusInfo(ceph1).entrySet()) {
-                if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                    nodeStatusInfo = (NodeStatusInfo) (entry.getValue().getData());
-                    for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
-                        statusmap.put(node.getClusterIp(), node.getStateList());
-                    }
-                }
+            NodeStatusInfo nodeStatusInfo = (NodeStatusInfo) GlobalCacheSDK.queryNodeStatusInfoLocal();
+            System.out.println(nodeStatusInfo.toString());
+            for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
+                statusmap.put(node.getClusterIp(), node.getStateList());
             }
         } catch (GlobalCacheSDKException e) {
             System.out.println("接口调用失败");
             e.printStackTrace();
         }
-
 
         //从集群获取数据
         try {
