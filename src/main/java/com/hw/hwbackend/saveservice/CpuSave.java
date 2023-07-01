@@ -43,6 +43,7 @@ public class CpuSave {
         int worktime = 0;
         //获取运行时间
         try {
+            System.out.println("useUptime");
             for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryUptime(hosts).entrySet()) {
                 if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                     UptimeInfo up = (UptimeInfo) (entry.getValue().getData());
