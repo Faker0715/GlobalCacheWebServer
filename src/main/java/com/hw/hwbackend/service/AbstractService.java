@@ -103,8 +103,6 @@ public class AbstractService {
         networkService.sendMsg();
     }
 
-
-
     @XxlJob("getSessionConnected")
     @XxlRegister(cron = "0 0/1 * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
     public void getSessionConnected() {

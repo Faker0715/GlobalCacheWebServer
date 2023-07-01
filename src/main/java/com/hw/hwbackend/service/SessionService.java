@@ -25,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
+
 //@MapperScan("com.hw.hwbackend.mapper")
 @Service
 public class SessionService {
@@ -32,6 +33,7 @@ public class SessionService {
     private final MenuMapper menuMapper;
 
     private static Logger log = LoggerFactory.getLogger(SessionService.class);
+
     @Autowired
     public SessionService(RegMapper regMapper, MenuMapper menuMapper) {
         this.regMapper = regMapper;
@@ -42,30 +44,11 @@ public class SessionService {
     public void initSession() {
         if (regMapper.getfinished() == 1) {
             // 得到所有的映射
-            List<Ceph> cephs = menuMapper.selectCephs();
             List<GlobalCacheUser> globalCacheUsers = regMapper.getuser();
             String ceph1 = regMapper.getCeph1Ip();
             UserHolder.getInstance().setCeph1(ceph1);
-            log.info("sessionsevice: setceph1ip: " + ceph1);
             ArrayList<String> hosts = new ArrayList<>();
-            for (Ceph ceph : cephs) {
-                hosts.add(ceph.getIp());
-                log.info("sessionsevice: add ip to cephs " + ceph.getIp());
-            }
-            Map<String,String> clustercephmap = new HashMap<>();
-
-            for (int i = 0; i < hosts.size(); i++) {
-                for (int j = 0; j < globalCacheUsers.size(); j++) {
-                    String password1 =  globalCacheUsers.get(j).getPassword();
-                    try {
-                        GlobalCacheSDK.createSession(hosts.get(i), globalCacheUsers.get(j).getUsername(), password1, 22);
-                    } catch (GlobalCacheSDKException e) {
-                        System.out.println("createSession失败 " + hosts.get(i) + " " + globalCacheUsers.get(j).getUsername());
-                        e.printStackTrace();
-                    }
-                }
-
-            }
+            HashMap<String, Boolean> clusterMap = new HashMap<>();
 
             // 程序已启动先更新node表
             Iprelation ip = new Iprelation();
@@ -73,68 +56,27 @@ public class SessionService {
             HashMap<Integer, ArrayList<Integer>> disks = new HashMap<>();
             ArrayList<Integer> nodes = new ArrayList<>();
             ArrayList<String> ips = new ArrayList<>();
-            NodeStatusInfo nodeStatusInfo = new NodeStatusInfo();
-            int tryTimes = 5;
-            int oldTimeout = 0;
             try {
-                // 记录当前接口默认超时等待时间
-                oldTimeout = GlobalCacheSDK.getCommandTimeout(RegisterExecutor.QUERY_NODE_STATUS_INFO);
-            } catch (GlobalCacheSDKException e) {
-                System.out.println("获取执行时间失败");
-                e.printStackTrace();
-            }
-            // 时长增长因子
-            double increaseFactor = 1.5f;
-            // 当前接口超时等待时间
-            int curTimeout = oldTimeout;
-            boolean flag = false;
-            for (int i = 0; i < tryTimes; ++i) {
-                if (flag)
-                    break;
-                try {
-                    for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryNodeStatusInfo(ceph1).entrySet()) {
-                        if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
-                            nodeStatusInfo = (NodeStatusInfo) (entry.getValue().getData());
-                            clustercephmap.put(nodeStatusInfo.getNodeList().get(0).getClusterIp(),entry.getKey());
-                            for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
-                                idmap.put(node.getNodeId(), node.getClusterIp());
-                                nodes.add(node.getNodeId());
-                                ips.add(node.getClusterIp());
-                                ArrayList<Integer> diskarray = new ArrayList<>();
-                                for (NodeStatusInfo.Disk disk : node.getDisks()) {
-                                    diskarray.add(disk.getDiskId());
-                                }
-                                disks.put(node.getNodeId(), diskarray);
-                            }
-                            flag = true;
-                        } else if (entry.getValue().getStatusCode() == StatusCode.EXEC_COMMAND_FAILED) {
-                            // 处理线程执行中断的情况 -> 休眠，等待下一次尝试
-                            sleep(oldTimeout);
-                        } else if (entry.getValue().getStatusCode() == StatusCode.EXEC_COMMAND_TIMEOUT) {
-                            // 处理请求超时的情况 -> 增长至 increaseFactor * curTimeout
-                            curTimeout = (int) Math.ceil(curTimeout * increaseFactor);
-                            GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_NODE_STATUS_INFO, curTimeout);
-                        }
-
+                NodeStatusInfo nodeStatusInfo = (NodeStatusInfo) GlobalCacheSDK.queryNodeStatusInfoLocal();
+                for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
+                    idmap.put(node.getNodeId(), node.getClusterIp());
+                    clusterMap.put(node.getClusterIp(),false);
+                    nodes.add(node.getNodeId());
+                    ips.add(node.getClusterIp());
+                    ArrayList<Integer> diskarray = new ArrayList<>();
+                    for (NodeStatusInfo.Disk disk : node.getDisks()) {
+                        diskarray.add(disk.getDiskId());
                     }
-                } catch (GlobalCacheSDKException | InterruptedException e) {
-                    System.out.println("接口调用失败");
-                    e.printStackTrace();
+                    disks.put(node.getNodeId(), diskarray);
                 }
-            }
-            try {
-                GlobalCacheSDK.setCommandTimeout(RegisterExecutor.QUERY_NODE_STATUS_INFO, oldTimeout);
             } catch (GlobalCacheSDKException e) {
-                System.out.println("设置执行时间失败");
+                System.out.println("接口调用失败");
                 e.printStackTrace();
             }
-
             ip.setId(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
-
             for (int i = 0; i < ips.size(); i++) {
-
                 for (int j = 0; j < globalCacheUsers.size(); j++) {
-                    String password1 =  globalCacheUsers.get(j).getPassword();
+                    String password1 = globalCacheUsers.get(j).getPassword();
                     try {
                         GlobalCacheSDK.createSession(ips.get(i), globalCacheUsers.get(j).getUsername(), password1, 22);
                     } catch (GlobalCacheSDKException e) {
@@ -142,18 +84,16 @@ public class SessionService {
                         e.printStackTrace();
                     }
                 }
-
             }
 
-
-            Map<String,StaticNetInfo> staticNetInfomap = new HashMap<>();
+            Map<String, StaticNetInfo> staticNetInfomap = new HashMap<>();
             for (int i = 0; i < ips.size(); i++) {
                 try {
                     for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryStaticNetInfo(hosts.get(i)).entrySet()) {
                         log.info("networksave-querystaticnetinfo: " + entry.getValue().getStatusCode());
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                             log.info("networksave-querystaticnetinfo-data: " + (StaticNetInfo) (entry.getValue().getData()));
-                            staticNetInfomap.put(entry.getKey(),(StaticNetInfo) entry.getValue().getData());
+                            staticNetInfomap.put(entry.getKey(), (StaticNetInfo) entry.getValue().getData());
                         }
                     }
                 } catch (GlobalCacheSDKException e) {
@@ -161,17 +101,6 @@ public class SessionService {
                     e.printStackTrace();
                 }
             }
-
-
-            for (Map.Entry<String, String> entry : clustercephmap.entrySet()) {
-                ArrayList<String> array = new ArrayList<>();
-                array.add(entry.getKey());
-                array.add(entry.getValue());
-                UserHolder.getInstance().getClusterMap().put(entry.getKey(),true);
-                UserHolder.getInstance().getClusterCephMap().put(array,true);
-            }
-            System.out.println("userholderclustermap: " + UserHolder.getInstance().getClusterMap().toString());
-            System.out.println("userholderclustercephmap: "+UserHolder.getInstance().getClusterCephMap().toString());
 
             ip.setNodes(nodes);
             ip.setIdMap(idmap);
@@ -181,6 +110,7 @@ public class SessionService {
             log.info("sessionservice-iprelation nodes: " + nodes.toString());
             log.info("sessionservice-iprelation idmap: " + idmap.toString());
             log.info("sessionservice-iprelation ips: " + ips.toString());
+            UserHolder.getInstance().setClusterMap(clusterMap);
             UserHolder.getInstance().setIprelation(ip);
             UserHolder.getInstance().setSuccess(true);
         }
