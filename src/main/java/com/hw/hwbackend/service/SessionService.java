@@ -95,9 +95,9 @@ public class SessionService {
                     for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryNodeStatusInfo(ceph1).entrySet()) {
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                             nodeStatusInfo = (NodeStatusInfo) (entry.getValue().getData());
+                            clustercephmap.put(nodeStatusInfo.getNodeList().get(0).getClusterIp(),entry.getKey());
                             for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
                                 idmap.put(node.getNodeId(), node.getClusterIp());
-                                clustercephmap.put(node.getClusterIp(),entry.getKey());
                                 nodes.add(node.getNodeId());
                                 ips.add(node.getClusterIp());
                                 ArrayList<Integer> diskarray = new ArrayList<>();
