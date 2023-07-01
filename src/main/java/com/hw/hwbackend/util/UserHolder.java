@@ -19,6 +19,8 @@ public class UserHolder {
     private String ceph1 = "";
     private boolean isRunning = false;
     private boolean isReady = false;
+    private HashMap<ArrayList<String>,Boolean> ClusterCephMap = new HashMap<>();
+    private HashMap<String,Boolean> ClusterMap = new HashMap<>();
 
     private HashMap<Integer,String> stateMap = new HashMap<>();
 

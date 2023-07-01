@@ -10,6 +10,7 @@ import com.hw.globalcachesdk.executor.RegisterExecutor;
 import com.hw.hwbackend.entity.Ceph;
 import com.hw.hwbackend.entity.GlobalCacheUser;
 import com.hw.hwbackend.entity.Iprelation;
+import com.hw.hwbackend.entity.User;
 import com.hw.hwbackend.mapper.MenuMapper;
 import com.hw.hwbackend.mapper.RegMapper;
 import com.hw.hwbackend.util.UserHolder;
@@ -51,6 +52,7 @@ public class SessionService {
                 hosts.add(ceph.getIp());
                 log.info("sessionsevice: add ip to cephs " + ceph.getIp());
             }
+            Map<String,String> clustercephmap = new HashMap<>();
 
             for (int i = 0; i < hosts.size(); i++) {
                 for (int j = 0; j < globalCacheUsers.size(); j++) {
@@ -95,6 +97,7 @@ public class SessionService {
                             nodeStatusInfo = (NodeStatusInfo) (entry.getValue().getData());
                             for (NodeStatusInfo.Node node : nodeStatusInfo.getNodeList()) {
                                 idmap.put(node.getNodeId(), node.getClusterIp());
+                                clustercephmap.put(node.getClusterIp(),entry.getKey());
                                 nodes.add(node.getNodeId());
                                 ips.add(node.getClusterIp());
                                 ArrayList<Integer> diskarray = new ArrayList<>();
@@ -158,6 +161,17 @@ public class SessionService {
                     e.printStackTrace();
                 }
             }
+
+
+            for (Map.Entry<String, String> entry : clustercephmap.entrySet()) {
+                ArrayList<String> array = new ArrayList<>();
+                array.add(entry.getKey());
+                array.add(entry.getValue());
+                UserHolder.getInstance().getClusterMap().put(entry.getKey(),true);
+                UserHolder.getInstance().getClusterCephMap().put(array,true);
+            }
+
+
 
             ip.setNodes(nodes);
             ip.setIdMap(idmap);

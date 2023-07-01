@@ -34,7 +34,9 @@ public class CpuCalender {
         }
         private int nodeId;
         private double nodeValue;
-        private NodeState nodeState;
+        private NodeState isIn;
+        private NodeState isRunning;
+        private Boolean isOnline;
     }
 
 }

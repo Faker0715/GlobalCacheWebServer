@@ -36,7 +36,8 @@ public class AbstractService {
     private MemoryService memoryService;
     @Autowired
     private NetworkService networkService;
-
+    @Autowired
+    private SessionConnectedService sessionConnectedService;
 
     @XxlJob("deleteLoginUser")
     @XxlRegister(cron = "* * 5 * * ?",author = "Faker",jobDesc = "deleteLoginUser",triggerStatus = 1)
@@ -100,5 +101,17 @@ public class AbstractService {
             return;
         }
         networkService.sendMsg();
+    }
+
+
+
+    @XxlJob("getSessionConnected")
+    @XxlRegister(cron = "0 0/1 * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
+    public void getSessionConnected() {
+        System.out.println("start getSessionConnected");
+        if(UserHolder.getInstance().isSuccess() == false){
+            return;
+        }
+        sessionConnectedService.func();
     }
 }
