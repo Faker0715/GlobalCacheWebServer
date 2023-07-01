@@ -129,11 +129,9 @@ public class HealthListSave {
                     if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
 
                         ClusterAlarmInfo alarmInfo = (ClusterAlarmInfo) entry.getValue().getData();
-
                         System.out.println("queryClusterAlarmInfo: " + alarmInfo.toString());
                         ArrayList<ClusterAlarmInfo.AlarmInfo> alarmInfoArraylist = alarmInfo.getAlarmInfoList();
 
-                        System.out.println("queryClusterAlarmInfoList: " + alarmInfoArraylist.get(0).getLog());
                         for (int k = 0; k < alarmInfoArraylist.size(); ++k) {
                             String log = alarmInfoArraylist.get(k).getLog();
                             HealthList.Health h = new HealthList.Health();
