@@ -62,7 +62,7 @@ public class AbstractService {
     @XxlJob("getCpuCalender")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getCpuCalender",triggerStatus = 1)
     public void getCpuCalender() {
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
             return;
         }
         cpuCalenderService.sendMsg();
@@ -71,7 +71,8 @@ public class AbstractService {
     @XxlJob("getCpuData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getCpuData",triggerStatus = 1)
     public void getCpuData() {
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
+
             return;
         }
         cpuService.sendMsg();
@@ -79,7 +80,8 @@ public class AbstractService {
     @XxlJob("getMemoryData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getMemoryData",triggerStatus = 1)
     public void getMemoryData() {
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
+
             return;
         }
         memoryService.sendMsg();
@@ -88,7 +90,8 @@ public class AbstractService {
     @XxlJob("getDiskData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getDiskData",triggerStatus = 1)
     public void getDiskData() {
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
+
             return;
         }
         diskService.sendMsg();
@@ -97,7 +100,8 @@ public class AbstractService {
     @XxlJob("getNetData")
     @XxlRegister(cron = "0/5 * * * * ?",author = "Faker",jobDesc = "getNetData",triggerStatus = 1)
     public void getNetData() {
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
+
             return;
         }
         networkService.sendMsg();
@@ -107,7 +111,7 @@ public class AbstractService {
     @XxlRegister(cron = "0/30 * * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
     public void getSessionConnected() {
         System.out.println("start getSessionConnected");
-        if(UserHolder.getInstance().isSuccess() == false){
+        if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
             return;
         }
         sessionConnectedService.func();

@@ -28,14 +28,7 @@ public class IprelationSave {
 
     @Autowired
     private IprelationData iprelationData;
-    @Autowired
-    private RegMapper regMapper;
-
     public void IprelationSchedule() {
-        String cephip = regMapper.getCeph1Ip();
-        if (UserHolder.getInstance().getCeph1() != cephip) {
-            UserHolder.getInstance().setCeph1(cephip);
-        }
         Iprelation ip = new Iprelation();
         Map<Integer, String> idmap = new HashMap<>();
 
@@ -82,8 +75,6 @@ public class IprelationSave {
         ip.setStaticNetInfomap(staticNetInfomap);
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.setIprelation(ip);
-        userHolder.setSuccess(true);
-        userHolder.setCeph1(cephip);
         iprelationData.saveIprelation(ip);
 
     }

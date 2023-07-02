@@ -737,6 +737,7 @@ public class AutoDeployService {
                             sleep(1000 * 120); // wait 120s
                         }
                         if (flag) {
+                            userHolder.setCeph1("");
                             userHolder.setSuccess(true);
                             userHolder.setReady(true);
                         }
@@ -764,7 +765,7 @@ public class AutoDeployService {
                 System.out.println("线程开始运行");
                 regMapper.setfinished();
                 // 必须保证数据库写入完成
-                sleep(1000);
+                sleep(500);
                 sessionService.initSession();
             }
         };
