@@ -29,11 +29,7 @@ public interface RegMapper extends BaseMapper<User> {
 
     @Update("UPDATE hwlogin.finish SET is_finished = 0")
     public void setnofinished();
-    @Update("UPDATE hwlogin.finish SET ceph1 = #{ip}")
-    public void SetIp(String ip);
 
-    @Select("select ceph1 from hwlogin.finish where is_finished=1")
-    public String getCeph1Ip();
     @Select("select * from hwlogin.sys_user where user_name = #{username}")
     public User getUserbyName(String username);
 
@@ -41,12 +37,6 @@ public interface RegMapper extends BaseMapper<User> {
     public List<GlobalCacheUser> getuser();
     @Select("select is_finished from hwlogin.finish where id=0")
     public int getfinished();
-
-//    @Select("UPDATE hwlogin.finish SET password = #{password}")
-//    public void setpassword(String password);
-
-//    @Select("select password from hwlogin.finish where id=0")
-//    public String getpassword();
 
     @Update("update hwlogin.sys_user set password=#{userPassword} where user_name=#{userName}")
     public void updataPassword(String userName,String userPassword);

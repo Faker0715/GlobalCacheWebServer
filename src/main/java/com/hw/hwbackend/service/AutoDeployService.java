@@ -9,17 +9,12 @@ import com.hw.globalcachesdk.exception.AsyncThreadException;
 import com.hw.globalcachesdk.exception.GlobalCacheSDKException;
 import com.hw.globalcachesdk.executor.CommandExecuteResult;
 import com.hw.hwbackend.entity.AutoList;
-import com.hw.hwbackend.entity.Ceph;
-import com.hw.hwbackend.entity.Iprelation;
-import com.hw.hwbackend.entity.User;
-import com.hw.hwbackend.mapper.MenuMapper;
 import com.hw.hwbackend.mapper.RegMapper;
 import com.hw.hwbackend.util.ResponseResult;
 import com.hw.hwbackend.util.UserHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.support.CustomSQLExceptionTranslatorRegistrar;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -40,9 +34,6 @@ public class AutoDeployService {
 
     @Autowired
     private RegMapper regMapper;
-    @Autowired
-    private MenuMapper menuMapper;
-
 
     @Autowired
     private SessionService sessionService;
@@ -50,14 +41,7 @@ public class AutoDeployService {
 
     public ResponseResult getReset(String token){
 
-        // ceph表清空
-        // finish 设置为0
-        // ceph1设置为0
-
-        regMapper.SetIp("");
         regMapper.setnofinished();
-        // userholder
-
         UserHolder userHolder = UserHolder.getInstance();
         userHolder.setAutoMap(new ConcurrentHashMap<>());
         userHolder.setSuccess(false);

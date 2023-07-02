@@ -16,28 +16,6 @@
             AND m.`status` = 0
     </select>
 
-    <update id="truncateTable" >
-        TRUNCATE TABLE ceph
-    </update>
-
-    <insert id="insertCephs">
-        INSERT INTO ceph (ceph, ip)
-        VALUES
-        <foreach collection ="cephList" item="ceph" separator =",">
-            (#{ceph.ceph}, #{ceph.ip})
-        </foreach>
-    </insert>
-
-    <select id="selectCephs" resultType="com.hw.hwbackend.entity.Ceph">
-        SELECT *
-        FROM
-            ceph
-    </select>
-
-
-
-
-
 
 
 

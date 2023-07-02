@@ -11,8 +11,4 @@ public interface MenuMapper extends BaseMapper<Menu> {
 
     List<String> selectPermsByUserId(Long userid);
 
-    void truncateTable();
-
-    Integer insertCephs(List<Ceph> cephList);
-    List<Ceph> selectCephs();
 }
