@@ -41,7 +41,7 @@ public class HealthListData {
     //查询
     public List<HealthList> getAbnInfo() {
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
-        Query query = new Query(Criteria.where("time").gte(time - 1000 * 60 * 60 * 5).lt(time + 1000 * 60 * 60 * 5))
+        Query query = new Query(Criteria.where("time").gte(time - 1000 * 60 * 5).lt(time + 1000 * 60 * 5))
                 .limit(1).with(Sort.by("time").descending());
         List<HealthList> mAlarmInfo = mongoTemplate.find(query, HealthList.class, "HealthList");
         return mAlarmInfo;

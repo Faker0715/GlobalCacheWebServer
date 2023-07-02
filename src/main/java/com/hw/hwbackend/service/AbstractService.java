@@ -110,7 +110,6 @@ public class AbstractService {
     @XxlJob("getSessionConnected")
     @XxlRegister(cron = "0/30 * * * * ?",author = "Faker",jobDesc = "getSessionConnected",triggerStatus = 1)
     public void getSessionConnected() {
-        System.out.println("start getSessionConnected");
         if(UserHolder.getInstance().isSuccess() == false || UserHolder.getInstance().getCeph1().equals("")){
             return;
         }

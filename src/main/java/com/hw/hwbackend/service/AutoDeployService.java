@@ -119,7 +119,6 @@ public class AutoDeployService {
                     entityMap.put(entry.getKey(), (ErrorCodeEntity) entry.getValue().getData());
                 } else {
                     System.out.println("接口调用失败");
-//                    System.out.println(entry.getValue().getStatusCode());
                 }
             }
         } catch (GlobalCacheSDKException e) {
@@ -220,6 +219,7 @@ public class AutoDeployService {
                 DiskInfo diskInfo = new DiskInfo();
                 try {
                     for (Map.Entry<String, CommandExecuteResult> entry : GlobalCacheSDK.queryDiskInfo(hosts).entrySet()) {
+
                         if (entry.getValue().getStatusCode() == StatusCode.SUCCESS) {
                             diskInfo = (DiskInfo) entry.getValue().getData();
                             ArrayList<DiskInfo.Disk> disksList = diskInfo.getDisksList();
