@@ -39,6 +39,7 @@ public class PtListSave {
         long stime = System.currentTimeMillis();
         //获取连接当前节点信息
         String cephip = UserHolder.getInstance().getCeph1();
+        System.out.println("ptip: "+cephip);
         UserHolder userHolder = UserHolder.getInstance();
         ArrayList<String> hosts = userHolder.getIprelation().getIps();
         Map<Integer, String> idmap = userHolder.getIprelation().getIdMap();
@@ -49,7 +50,6 @@ public class PtListSave {
         int oldTimeout = 0;
         try {
             // 记录当前接口默认超时等待时间
-//            oldTimeout = GlobalCacheSDK.getCommandConf(RegisterExecutor.QUERY_PT_IO_INFO).getTimeout();
             oldTimeout = GlobalCacheSDK.getCommandTimeout(RegisterExecutor.QUERY_PT_IO_INFO);
         } catch (GlobalCacheSDKException e) {
             System.out.println("获取执行时间失败");

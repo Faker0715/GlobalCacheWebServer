@@ -32,6 +32,7 @@ public class PgListSave {
         long stime = System.currentTimeMillis();
 
         String cephip = UserHolder.getInstance().getCeph1();
+        System.out.println("ptip: "+cephip);
         long time = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
 
         //获取连接当前节点信息
