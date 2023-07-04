@@ -1071,7 +1071,20 @@ public class AutoDeployService {
             return;
         }
 
-        // 安装Ceph
+        // 卸载globalcache服务端
+        try {
+            Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("serverNodeUninstall", "server node uninstall globalcache");
+            printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
+        } catch (GlobalCacheSDKException | AsyncThreadException e) {
+            e.printStackTrace(System.out);
+            System.out.println("卸载globalcache服务端失败");
+            UserHolder.getInstance().setSuccess(false);
+            UserHolder.getInstance().getAutopipe().add("卸载globalcache服务端失败");
+
+            return;
+        }
+
+        // Ceph磁盘分区
         try {
             Map<String, AsyncEntity> asyncEntityMap = asyncDeployMethodCaller("cephNodeDiskPartition", "ceph node disk partition");
             printConsoleLogAndWaitAsyncCallFinish(asyncEntityMap);
